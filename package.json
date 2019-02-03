@@ -1,0 +1,16 @@
+{
+  "name": "assistantes",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mopidy": "^1.0.0",
+    "mqtt": "^2.18.8",
+    "say": "^0.15.0"
+  }
+}
