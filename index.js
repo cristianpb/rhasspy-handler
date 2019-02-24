@@ -29,7 +29,6 @@ client.on('connect', function () {
 
 client.on('message', function (topic, message) {
     if (topic === "hermes/asr/startListening") {
-        say.speak('Yes ?')
         onListeningStateChanged(true);
     } else if (topic === "hermes/asr/stopListening") {
         onListeningStateChanged(false);
@@ -56,7 +55,7 @@ function onIntentDetected(intent) {
         console.log('Setting la luciernaga');
         const files = fs.readdirSync('/var/lib/mopidy/media');
         console.log(`file:///var/lib/mopidy/media/${files[0]}`);
-        connectMopidyRadio([`file:///var/lib/mopidy/media/${files[0]}`]);
+        connectMopidyRadio([`file:///var/lib/mopidy/media/${files[0]}`, `file:///var/lib/mopidy/media/${files[1]}`]);
       } else {
         console.log("Which radio");
         say.speak("Radio unkown");
@@ -163,16 +162,22 @@ async function setRadio (mopidy, radio) {
 
 async function downloadPostcast() {
   let feed = await parser.parseURL('http://fapi-top.prisasd.com/podcast/caracol/la_luciernaga/itunestfp/podcast.xml');
-  console.log(feed.title);
+  console.log("RSS: ", feed.title);
 
   const files = fs.readdirSync('/var/lib/mopidy/media');
-  console.log(files);
+  
+  if (files.length > 5) {
+    files.slice(5, files.length).forEach((item) => {
+      let path = Path.resolve('/var/lib/mopidy/media', item)
+      fs.unlinkSync(path);
+    })
+  }
 
   feed.items.slice(0,5).forEach(async (item) => {
     let pieces = item.guid.split('/')
-    console.log("Checking ", pieces[pieces.length-1]);
+    console.log("Checking :", pieces[pieces.length-1]);
     if (files.indexOf(pieces[pieces.length-1]) === -1) {
-      console.log(item.title + ':' + item.guid)
+      console.log(`Downloding ${item.title}:${item.guid}`)
       let { guid } = item; 
       await downloadFile(guid, pieces)
     }
@@ -182,8 +187,6 @@ async function downloadPostcast() {
 async function downloadFile (guid, pieces) {
   let path = Path.resolve('/var/lib/mopidy/media', pieces[pieces.length-1])
   const writer = fs.createWriteStream(path)
-  console.log('GUID: ', guid);
-  console.log('TYPE: ', typeof(guid));
   const response = await axios({url: guid, method: 'GET', responseType: 'stream'})
   response.data.pipe(writer)
 
