@@ -1,6 +1,10 @@
 const mqtt = require('mqtt');
-const say = require('say')
+const say = require('say');
 const Mopidy = require("mopidy");
+const Parser = require('rss-parser');
+const fs = require('fs');
+const Path = require('path');
+const axios = require('axios');
 const hostname = "192.168.43.254";
 const client  = mqtt.connect(`mqtt://${hostname}`);
 const RADIOS = {
@@ -13,9 +17,12 @@ const RADIOS = {
   'noventa': ['tunein:station:s89818']
 }
 
+let parser = new Parser();
+
 client.on('connect', function () {
   console.log("[Snips Log] Connected to MQTT broker " + hostname);
-  say.speak('Connected')
+  downloadPostcast();
+  say.speak('Connected');
   client.subscribe('hermes/#');
   volumeSet(13);
 });
@@ -42,8 +49,16 @@ function onIntentDetected(intent) {
     if ((slots) && (slots.length > 0)) {
       const {rawValue = null} = slots[0]
       if (Object.keys(RADIOS).indexOf(rawValue) >= 0) {
-        connectMopidyRadio(rawValue);
+        say.speak(`Playing ${rawValue}`)
+        connectMopidyRadio(RADIOS[rawValue]);
+      } else if (rawValue == 'la luciernaga') {
+        say.speak(`Playing la luciernaga`)
+        console.log('Setting la luciernaga');
+        const files = fs.readdirSync('/var/lib/mopidy/media');
+        console.log(`file:///var/lib/mopidy/media/${files[0]}`);
+        connectMopidyRadio([`file:///var/lib/mopidy/media/${files[0]}`]);
       } else {
+        console.log("Which radio");
         say.speak("Radio unkown");
       }
     } else {
@@ -127,23 +142,53 @@ function stopMopidy() {
   });
 }
 
-function connectMopidyRadio(radio_name) {
+function connectMopidyRadio(radio) {
   const mopidy = new Mopidy({
     webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`,
   });
   mopidy.on("state", async (state) => {
-    console.log('Seting', radio_name);
-    await setRadio(mopidy, radio_name);
+    await setRadio(mopidy, radio);
   });
   mopidy.on("event", console.log);
 }
 
 async function setRadio (mopidy, radio) {
-  say.speak(`Playing ${radio}`)
   await mopidy.tracklist.clear()
   await mopidy.playback.pause()
-  await mopidy.tracklist.add({uris: RADIOS[radio]})
+  await mopidy.tracklist.add({uris: radio})
   tracks = await mopidy.tracklist.getTlTracks();
   await mopidy.playback.play({tlid: tracks[0].tlid});
   mopidy.off();
+}
+
+async function downloadPostcast() {
+  let feed = await parser.parseURL('http://fapi-top.prisasd.com/podcast/caracol/la_luciernaga/itunestfp/podcast.xml');
+  console.log(feed.title);
+
+  const files = fs.readdirSync('/var/lib/mopidy/media');
+  console.log(files);
+
+  feed.items.slice(0,5).forEach(async (item) => {
+    let pieces = item.guid.split('/')
+    console.log("Checking ", pieces[pieces.length-1]);
+    if (files.indexOf(pieces[pieces.length-1]) === -1) {
+      console.log(item.title + ':' + item.guid)
+      let { guid } = item; 
+      await downloadFile(guid, pieces)
+    }
+  });
+}
+
+async function downloadFile (guid, pieces) {
+  let path = Path.resolve('/var/lib/mopidy/media', pieces[pieces.length-1])
+  const writer = fs.createWriteStream(path)
+  console.log('GUID: ', guid);
+  console.log('TYPE: ', typeof(guid));
+  const response = await axios({url: guid, method: 'GET', responseType: 'stream'})
+  response.data.pipe(writer)
+
+  return new Promise((resolve, reject) => {
+    writer.on('finish', resolve)
+    writer.on('error', reject)
+  })
 }
