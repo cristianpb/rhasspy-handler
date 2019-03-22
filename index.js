@@ -164,24 +164,35 @@ async function downloadPostcast() {
   let feed = await parser.parseURL('http://fapi-top.prisasd.com/podcast/caracol/la_luciernaga/itunestfp/podcast.xml');
   console.log("RSS: ", feed.title);
 
-  const files = fs.readdirSync('/var/lib/mopidy/media');
-  
-  if (files.length > 5) {
-    files.slice(5, files.length).forEach((item) => {
-      let path = Path.resolve('/var/lib/mopidy/media', item)
-      fs.unlinkSync(path);
+  const dir = '/var/lib/mopidy/media' 
+  const files = fs.readdirSync(dir)
+    .map((fileName) => {
+      return {
+        name: fileName,
+        time: fs.statSync(dir + '/' + fileName).mtime.getTime()
+      };
     })
-  }
+    .sort((a, b) => b.time - a.time) // Sort decending order
+    .map((v) => v.name);
 
   feed.items.slice(0,5).forEach(async (item) => {
     let pieces = item.guid.split('/')
-    console.log("Checking :", pieces[pieces.length-1]);
+    console.log(`Checking : ${pieces[pieces.length-1]}`);
     if (files.indexOf(pieces[pieces.length-1]) === -1) {
-      console.log(`Downloding ${item.title}:${item.guid}`)
+      console.log(`Downloading ${item.title}:${item.guid}`)
       let { guid } = item; 
       await downloadFile(guid, pieces)
     }
   });
+
+  // Delete old files
+  if (files.length > 5) {
+    files.slice(6, files.length).forEach((item) => {
+      console.log(`Removing ${item}`)
+      let path = Path.resolve(dir, item)
+      fs.unlinkSync(path);
+    })
+  }
 }
 
 async function downloadFile (guid, pieces) {
