@@ -1,6 +1,7 @@
 const mqtt = require('mqtt');
 const say = require('say');
 const Mopidy = require("mopidy");
+const blue = require("bluetoothctl");
 const Parser = require('rss-parser');
 const fs = require('fs');
 const Path = require('path');
@@ -19,6 +20,19 @@ const RADIOS = {
 
 let parser = new Parser();
 
+/* Automatic Bluetooth connection */
+blue.Bluetooth()
+
+blue.on(blue.bluetoothEvents.Device, function (devices) {
+  const hasBluetooth=blue.checkBluetoothController();
+  if(hasBluetooth) {
+    devices.forEach((device) => {
+      blue.connect(device.mac)
+    })
+  }
+})
+
+/* On Connect MQTT */
 client.on('connect', function () {
   console.log("[Snips Log] Connected to MQTT broker " + hostname);
   downloadPostcast();
@@ -27,6 +41,7 @@ client.on('connect', function () {
   volumeSet(13);
 });
 
+/* On Message */
 client.on('message', function (topic, message) {
     if (topic === "hermes/asr/startListening") {
         onListeningStateChanged(true);
@@ -39,6 +54,7 @@ client.on('message', function (topic, message) {
     }
 });
 
+/* Snips actions */
 function onIntentDetected(intent) {
   console.log(`[Snips Log] Intent detected: ${JSON.stringify(intent)}`);
   const {intent: {intentName} = null} = intent;
