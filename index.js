@@ -68,7 +68,7 @@ function onIntentDetected(intent) {
         connectMopidyRadio(RADIOS[rawValue]);
       } else if (rawValue == 'la luciernaga') {
         say.speak(`Playing la luciernaga`)
-        console.log('Setting la luciernaga');
+        console.log('Playing la luciernaga');
         const files = fs.readdirSync('/var/lib/mopidy/media');
         console.log(`file:///var/lib/mopidy/media/${files[0]}`);
         connectMopidyRadio([`file:///var/lib/mopidy/media/${files[0]}`, `file:///var/lib/mopidy/media/${files[1]}`]);
@@ -81,8 +81,17 @@ function onIntentDetected(intent) {
     }
   } else if (intentName == 'cristianpb:speakerInterrupt') {
     stopMopidy();
+  } else if (intentName == 'cristianpb:playArtist') {
+    console.log(intent);
+    const {slots = null} = intent
+    if ((slots) && (slots.length > 0)) {
+      const {rawValue = null} = slots[0]
+      searchArtist([rawValue]);
+    }
   } else if (intentName == 'cristianpb:volumeDown') {
     volumeDown();
+  } else if (intentName == 'cristianpb:nextSong') {
+    nextSong();
   } else if (intentName == 'cristianpb:volumeUp') {
     volumeUp();
   } else if (intentName == 'cristianpb:volumeSet') {
@@ -139,7 +148,7 @@ function volumeDown () {
   mopidy.on("state", async (state) => {
     console.log('Volume down');
     say.speak(`Volume down`)
-    await mopidy.mixer.setVolume([10])
+    await mopidy.mixer.setVolume([5])
     mopidy.off();
   });
 }
@@ -221,4 +230,27 @@ async function downloadFile (guid, pieces) {
     writer.on('finish', resolve)
     writer.on('error', reject)
   })
+}
+
+function searchArtist (rawValue) {
+  const mopidy = new Mopidy({
+    webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`,
+  });
+  mopidy.on("state", async (state) => {
+    console.log(`Searching for ${rawValue}`)
+    say.speak(`Searching for ${rawValue}`)
+    let result = await mopidy.library.search({'any': rawValue, 'uris': ['soundcloud:']})
+    await setRadio(mopidy, result[0]['tracks'].map(item => item.uri));
+  });
+}
+
+function nextSong () {
+  const mopidy = new Mopidy({
+    webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`,
+  });
+  mopidy.on("state", async (state) => {
+    console.log('Next');
+    say.speak(`Next`)
+    await mopidy.playback.next();
+  });
 }
