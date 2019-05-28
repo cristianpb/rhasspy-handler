@@ -182,7 +182,13 @@ async function setRadio (mopidy, radio) {
   await mopidy.playback.pause()
   await mopidy.tracklist.add({uris: radio})
   tracks = await mopidy.tracklist.getTlTracks();
-  await mopidy.playback.play({tlid: tracks[0].tlid});
+  try {
+    await mopidy.playback.play({tlid: tracks[0].tlid});
+  } catch (e) {
+    await mopidy.playback.stop()
+    client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Tengo un pequeño problema"}`)
+    console.log(e);
+  }
   mopidy.off();
 }
 
