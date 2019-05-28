@@ -1,20 +1,22 @@
 const mqtt = require('mqtt');
-const say = require('say');
 const Mopidy = require("mopidy");
 const blue = require("bluetoothctl");
 const Parser = require('rss-parser');
 const fs = require('fs');
 const Path = require('path');
 const axios = require('axios');
-const hostname = "192.168.43.254";
+const hostname = "localhost";
 const client  = mqtt.connect(`mqtt://${hostname}`);
 const RADIOS = {
   'vibra': ['tunein:station:s84760'],
   'la mega': ['tunein:station:s86588'],
-  'la carinosa': ['tunein:station:s143839'],
+  'la cariñosa': ['tunein:station:s143839'],
   'caracol': ['tunein:station:s16182'],
   'clasica': ['tunein:station:s25732'],
   'suavecita': ['tunein:station:s33937'],
+  'ascensor': ['http://somafm.com/groovesalad.pls'],
+  'lounge': ['http://somafm.com/illstreet.pls'],
+  'regetón': ['tunein:station:s269960'],
   'noventa': ['tunein:station:s89818']
 }
 
@@ -35,8 +37,8 @@ blue.on(blue.bluetoothEvents.Device, function (devices) {
 /* On Connect MQTT */
 client.on('connect', function () {
   console.log("[Snips Log] Connected to MQTT broker " + hostname);
-  downloadPostcast();
-  say.speak('Connected');
+  downloadPostcast('http://fapi-top.prisasd.com/podcast/caracol/la_luciernaga/itunestfp/podcast.xml');
+  client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Connectado"}`)
   client.subscribe('hermes/#');
   volumeSet(13);
 });
@@ -64,20 +66,20 @@ function onIntentDetected(intent) {
     if ((slots) && (slots.length > 0)) {
       const {rawValue = null} = slots[0]
       if (Object.keys(RADIOS).indexOf(rawValue) >= 0) {
-        say.speak(`Playing ${rawValue}`)
+        client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Voy a sintonizar ${rawValue}"}`)
         connectMopidyRadio(RADIOS[rawValue]);
-      } else if (rawValue == 'la luciernaga') {
-        say.speak(`Playing la luciernaga`)
-        console.log('Playing la luciernaga');
+      } else if (rawValue == 'la luciérnaga') {
+        client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Voy a sintonizar la luciérnaga"}`)
+        console.log('Playing la luciérnaga');
         const files = fs.readdirSync('/var/lib/mopidy/media');
-        console.log(`file:///var/lib/mopidy/media/${files[0]}`);
-        connectMopidyRadio([`file:///var/lib/mopidy/media/${files[0]}`, `file:///var/lib/mopidy/media/${files[1]}`]);
+        console.log(`file:///var/lib/mopidy/media/${files[files.length-1]}`);
+        connectMopidyRadio([`file:///var/lib/mopidy/media/${files[files.length-1]}`, `file:///var/lib/mopidy/media/${files[files.length-2]}`]);
       } else {
-        console.log("Which radio");
-        say.speak("Radio unkown");
+        client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Radio desconocida"}`)
+        console.log("Unkown");
       }
     } else {
-    say.speak(`Don't know what to do`)
+      client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"No entendí"}`)
     }
   } else if (intentName == 'cristianpb:speakerInterrupt') {
     stopMopidy();
@@ -100,15 +102,15 @@ function onIntentDetected(intent) {
       const {value = null} = slots[0]
       volumeSet(value['value']);
     } else {
-    say.speak(`Don't know what to do with ${intentName}`)
+      client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"No entendí ${intentName}"}`)
     }
   } else {
-    say.speak(`Don't know what to do`)
+      client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"No se que hacer"}`)
   }
 }
 
 function onHotwordDetected() {
-  say.speak('Yes ?')
+  client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Si?"}`)
   console.log("[Snips Log] Hotword detected");
 }
 
@@ -121,9 +123,8 @@ function volumeSet (volumeNumber) {
     webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`,
   });
   mopidy.on("state:online", async (state) => {
-    console.log("Im", state);
     console.log(`Volume set to ${volumeNumber}`)
-    await say.speak(`Volume set to ${volumeNumber}`)
+    client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Volumen a ${volumeNumber}"}`)
     await mopidy.mixer.setVolume([Number(volumeNumber)])
     await mopidy.off();
   });
@@ -133,9 +134,9 @@ function volumeUp () {
   const mopidy = new Mopidy({
     webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`,
   });
-  mopidy.on("state", async (state) => {
+  mopidy.on("state", async () => {
     console.log('Volume up');
-    say.speak(`Volume up`)
+    client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Volumen alto"}`)
     await mopidy.mixer.setVolume([50])
     mopidy.off();
   });
@@ -145,9 +146,9 @@ function volumeDown () {
   const mopidy = new Mopidy({
     webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`,
   });
-  mopidy.on("state", async (state) => {
+  mopidy.on("state", async () => {
     console.log('Volume down');
-    say.speak(`Volume down`)
+    client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Volumen bajo"}`)
     await mopidy.mixer.setVolume([5])
     mopidy.off();
   });
@@ -158,11 +159,11 @@ function stopMopidy() {
   const mopidy = new Mopidy({
     webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`,
   });
-  mopidy.on("state", async (state) => {
+  mopidy.on("state", async () => {
     console.log('Stopping moppidy');
-    say.speak(`Stopping`)
-    await mopidy.playback.pause()
+    await mopidy.playback.stop()
     mopidy.off();
+    client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Silencio"}`)
   });
 }
 
@@ -170,7 +171,7 @@ function connectMopidyRadio(radio) {
   const mopidy = new Mopidy({
     webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`,
   });
-  mopidy.on("state", async (state) => {
+  mopidy.on("state", async () => {
     await setRadio(mopidy, radio);
   });
   mopidy.on("event", console.log);
@@ -185,8 +186,8 @@ async function setRadio (mopidy, radio) {
   mopidy.off();
 }
 
-async function downloadPostcast() {
-  let feed = await parser.parseURL('http://fapi-top.prisasd.com/podcast/caracol/la_luciernaga/itunestfp/podcast.xml');
+async function downloadPostcast(url) {
+  let feed = await parser.parseURL(url);
   console.log("RSS: ", feed.title);
 
   const dir = '/var/lib/mopidy/media' 
@@ -236,9 +237,9 @@ function searchArtist (rawValue) {
   const mopidy = new Mopidy({
     webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`,
   });
-  mopidy.on("state", async (state) => {
+  mopidy.on("state", async () => {
     console.log(`Searching for ${rawValue}`)
-    say.speak(`Searching for ${rawValue}`)
+    client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Buscando canciones de ${rawValue}"}`)
     let result = await mopidy.library.search({'any': rawValue, 'uris': ['soundcloud:']})
     await setRadio(mopidy, result[0]['tracks'].map(item => item.uri));
   });
@@ -248,9 +249,9 @@ function nextSong () {
   const mopidy = new Mopidy({
     webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`,
   });
-  mopidy.on("state", async (state) => {
+  mopidy.on("state", async () => {
     console.log('Next');
-    say.speak(`Next`)
+    client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Siguiente canción"}`)
     await mopidy.playback.next();
   });
 }
