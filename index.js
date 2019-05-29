@@ -1,6 +1,6 @@
 const mqtt = require('mqtt');
+require('dotenv').config()
 const Mopidy = require("mopidy");
-const blue = require("bluetoothctl");
 const Parser = require('rss-parser');
 const fs = require('fs');
 const Path = require('path');
@@ -20,20 +20,24 @@ const RADIOS = {
   'noventa': ['tunein:station:s89818']
 }
 
-let parser = new Parser();
+if (process.env.BLUETOOTH == "true") {
+  const blue = require("bluetoothctl");
+  let parser = new Parser();
 
-/* Automatic Bluetooth connection */
-blue.Bluetooth()
+  /* Automatic Bluetooth connection */
+  blue.Bluetooth()
 
-blue.on(blue.bluetoothEvents.Device, function (devices) {
-  const hasBluetooth=blue.checkBluetoothController();
-  if(hasBluetooth) {
-    devices.forEach((device) => {
-      blue.connect(device.mac)
-    })
-  }
-})
+  blue.on(blue.bluetoothEvents.Device, function (devices) {
+    const hasBluetooth=blue.checkBluetoothController();
+    if(hasBluetooth) {
+      devices.forEach((device) => {
+        blue.connect(device.mac)
+      })
+    }
+  })
+}
 
+//
 /* On Connect MQTT */
 client.on('connect', function () {
   console.log("[Snips Log] Connected to MQTT broker " + hostname);
