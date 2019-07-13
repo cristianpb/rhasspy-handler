@@ -10,10 +10,9 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
-    "bluetoothctl": "^1.1.0",
     "dotenv": "^8.0.0",
     "mopidy": "^1.0.0",
     "mqtt": "^2.18.8",
-    "rss-parser": "^3.7.0",
+    "rss-parser": "^3.7.1"
   }
 }

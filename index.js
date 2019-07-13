@@ -22,7 +22,6 @@ const RADIOS = {
 
 if (process.env.BLUETOOTH == "true") {
   const blue = require("bluetoothctl");
-  let parser = new Parser();
 
   /* Automatic Bluetooth connection */
   blue.Bluetooth()
@@ -197,6 +196,7 @@ async function setRadio (mopidy, radio) {
 }
 
 async function downloadPostcast(url) {
+  let parser = new Parser();
   let feed = await parser.parseURL(url);
   console.log("RSS: ", feed.title);
 
