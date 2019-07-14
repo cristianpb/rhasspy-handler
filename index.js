@@ -5,7 +5,7 @@ const Parser = require('rss-parser');
 const fs = require('fs');
 const Path = require('path');
 const axios = require('axios');
-const hostname = "localhost";
+const hostname = process.env.HOST ;
 const client  = mqtt.connect(`mqtt://${hostname}`);
 const RADIOS = {
   'vibra': ['tunein:station:s84760'],
@@ -74,9 +74,9 @@ function onIntentDetected(intent) {
       } else if (rawValue == 'la luciérnaga') {
         client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Voy a sintonizar la luciérnaga"}`)
         console.log('Playing la luciérnaga');
-        const files = fs.readdirSync('/var/lib/mopidy/media');
-        console.log(`file:///var/lib/mopidy/media/${files[files.length-1]}`);
-        connectMopidyRadio([`file:///var/lib/mopidy/media/${files[files.length-1]}`, `file:///var/lib/mopidy/media/${files[files.length-2]}`]);
+        const files = fs.readdirSync(process.env.PODCAST_DIR);
+        console.log(`file://${process.env.PODCAST_DIR}/${files[files.length-1]}`);
+        connectMopidyRadio([`file://${process.env.PODCAST_DIR}/${files[files.length-1]}`, `file://${process.env.PODCAST_DIR}/${files[files.length-2]}`]);
       } else {
         client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Radio desconocida"}`)
         console.log("Unkown");
@@ -200,7 +200,7 @@ async function downloadPostcast(url) {
   let feed = await parser.parseURL(url);
   console.log("RSS: ", feed.title);
 
-  const dir = '/var/lib/mopidy/media' 
+  const dir = process.env.PODCAST_DIR // '/var/lib/mopidy/media' 
   const files = fs.readdirSync(dir)
     .map((fileName) => {
       return {
@@ -232,7 +232,7 @@ async function downloadPostcast(url) {
 }
 
 async function downloadFile (guid, pieces) {
-  let path = Path.resolve('/var/lib/mopidy/media', pieces[pieces.length-1])
+  let path = Path.resolve(process.env.PODCAST_DIR, pieces[pieces.length-1])
   const writer = fs.createWriteStream(path)
   const response = await axios({url: guid, method: 'GET', responseType: 'stream'})
   response.data.pipe(writer)
