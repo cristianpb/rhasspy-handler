@@ -5,6 +5,7 @@ const Parser = require('rss-parser');
 const fs = require('fs');
 const Path = require('path');
 const axios = require('axios');
+const CronJob = require('cron').CronJob;
 const hostname = process.env.HOST ;
 const client  = mqtt.connect(`mqtt://${hostname}`);
 const RADIOS = {
@@ -15,10 +16,23 @@ const RADIOS = {
   'clasica': ['tunein:station:s25732'],
   'suavecita': ['tunein:station:s33937'],
   'ascensor': ['http://somafm.com/groovesalad.pls'],
+  'covers': ['http://somafm.com/covers.pls'],
+  'indie': ['http://somafm.com/indiepop.pls'],
   'lounge': ['http://somafm.com/illstreet.pls'],
   'regetón': ['tunein:station:s269960'],
   'noventa': ['tunein:station:s89818']
 }
+
+new CronJob({
+  // At 12:00 on every
+  cronTime: '00 12 * * *',
+  onTick: function () {
+    client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Son las 12"}`)
+  },
+  start: true,
+  timeZone: 'Europe/Paris'
+});
+
 
 if (process.env.BLUETOOTH == "true") {
   const blue = require("bluetoothctl");

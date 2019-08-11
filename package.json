@@ -10,9 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
+    "cron": "^1.7.1",
     "dotenv": "^8.0.0",
     "mopidy": "^1.0.0",
     "mqtt": "^2.18.8",
-    "rss-parser": "^3.7.1"
+    "rss-parser": "^3.7.2"
   }
 }
