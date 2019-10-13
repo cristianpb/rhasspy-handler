@@ -24,13 +24,14 @@ const RADIOS = {
 }
 
 new CronJob({
-  // At 12:00 on every
-  cronTime: '00 12 * * *',
-  onTick: function () {
-    client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Son las 12"}`)
-  },
-  start: true,
-  timeZone: 'Europe/Paris'
+	// At minute 0 past every hour from 9 through 21.”
+	cronTime: '00 9-21 * * *',
+	onTick: function () {
+		let currentTime = new Date();
+		client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Son las ${currentTime.toTimeString().substring(0, 2)}"}`)
+	},
+	start: true,
+	timeZone: 'Europe/Paris'
 });
 
 
