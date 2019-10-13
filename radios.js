@@ -14,6 +14,6 @@ const RADIOS = {
   'vallenato': ['tunein:station:s297590'],
   'las noticias': ['podcast+http://radiofrance-podcast.net/podcast09/rss_12494.xml'],
   'noventa': ['tunein:station:s89818']
-}
+};
 
-module.export = RADIOS;
+module.exports = RADIOS;
