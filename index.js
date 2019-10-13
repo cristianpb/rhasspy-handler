@@ -11,15 +11,18 @@ const client  = mqtt.connect(`mqtt://${hostname}`);
 const RADIOS = {
   'vibra': ['tunein:station:s84760'],
   'la mega': ['tunein:station:s86588'],
+  'la joya': ['tunein:station:s192004'],
   'la cariñosa': ['tunein:station:s143839'],
   'caracol': ['tunein:station:s16182'],
-  'clasica': ['tunein:station:s25732'],
+  'clásica': ['tunein:station:s25732'],
   'suavecita': ['tunein:station:s33937'],
   'ascensor': ['http://somafm.com/groovesalad.pls'],
   'covers': ['http://somafm.com/covers.pls'],
   'indie': ['http://somafm.com/indiepop.pls'],
   'lounge': ['http://somafm.com/illstreet.pls'],
   'regetón': ['tunein:station:s269960'],
+  'vallenato': ['tunein:station:s297590'],
+  'las noticias': ['podcast+http://radiofrance-podcast.net/podcast09/rss_12494.xml'],
   'noventa': ['tunein:station:s89818']
 }
 
@@ -82,11 +85,11 @@ function onIntentDetected(intent) {
     console.log(intent);
     const {slots = null} = intent
     if ((slots) && (slots.length > 0)) {
-      const {rawValue = null} = slots[0]
-      if (Object.keys(RADIOS).indexOf(rawValue) >= 0) {
-        client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Voy a sintonizar ${rawValue}"}`)
-        connectMopidyRadio(RADIOS[rawValue]);
-      } else if (rawValue == 'la luciérnaga') {
+      const {value = null} = slots[0];
+      if (Object.keys(RADIOS).indexOf(value.value) >= 0) {
+        client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Voy a sintonizar ${value.value}"}`)
+        connectMopidyRadio(RADIOS[value.value]);
+      } else if (value.value == 'la luciérnaga') {
         client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Voy a sintonizar la luciérnaga"}`)
         console.log('Playing la luciérnaga');
         const files = fs.readdirSync(process.env.PODCAST_DIR);
@@ -105,8 +108,8 @@ function onIntentDetected(intent) {
     console.log(intent);
     const {slots = null} = intent
     if ((slots) && (slots.length > 0)) {
-      const {rawValue = null} = slots[0]
-      searchArtist([rawValue]);
+      const {value = null} = slots[0];
+      searchArtist([value.value]);
     }
   } else if (intentName == 'cristianpb:volumeDown') {
     volumeDown();
@@ -166,9 +169,9 @@ function volumeDown () {
   });
   mopidy.on("state", async () => {
     console.log('Volume down');
-    client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Volumen bajo"}`)
     await mopidy.mixer.setVolume([5])
     mopidy.off();
+    client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Volumen bajo"}`)
   });
 }
 
@@ -180,6 +183,7 @@ function stopMopidy() {
   mopidy.on("state", async () => {
     console.log('Stopping moppidy');
     await mopidy.playback.stop()
+    await mopidy.tracklist.clear()
     mopidy.off();
     client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Silencio"}`)
   });
@@ -198,8 +202,10 @@ function connectMopidyRadio(radio) {
 async function setRadio (mopidy, radio) {
   await mopidy.tracklist.clear()
   await mopidy.playback.pause()
-  await mopidy.tracklist.add({uris: radio})
-  tracks = await mopidy.tracklist.getTlTracks();
+  let tracks = await mopidy.tracklist.add({uris: radio})
+  if (radio[0].includes('podcast')) {
+	tracks = [tracks[tracks.length - 1]]
+  }
   try {
     await mopidy.playback.play({tlid: tracks[0].tlid});
   } catch (e) {
@@ -258,14 +264,14 @@ async function downloadFile (guid, pieces) {
   })
 }
 
-function searchArtist (rawValue) {
+function searchArtist (Value) {
   const mopidy = new Mopidy({
     webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`,
   });
   mopidy.on("state", async () => {
-    console.log(`Searching for ${rawValue}`)
-    client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Buscando canciones de ${rawValue}"}`)
-    let result = await mopidy.library.search({'any': rawValue, 'uris': ['soundcloud:']})
+    console.log(`Searching for ${Value}`)
+    client.publish("hermes/tts/say", `{"siteId":"default","lang": "es", "text":"Buscando canciones de ${Value}"}`)
+    let result = await mopidy.library.search({'any': Value, 'uris': ['soundcloud:']})
     await setRadio(mopidy, result[0]['tracks'].map(item => item.uri));
   });
 }
