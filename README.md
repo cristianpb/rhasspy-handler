@@ -14,18 +14,12 @@ I want to control music coming from my raspberry pi, having some major concerns:
 * Able to control all kind of music. I follow podcast but I also like to hear radio stations and stream music from online services like Soundcloud.
 * Using `js` language for easy asynchronous executing. Instead of using python and specially python2 to control snips 
 
-## Installation
+## Usage
 
-Install dependencies
-
-```
-npm install
-```
-
-run script
+Launching the following command will install dependencies automatically
 
 ```
-node index.js
+make up
 ```
 
 ## Requirements
