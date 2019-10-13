@@ -3,6 +3,7 @@ const Parser = require('rss-parser');
 const fs = require('fs');
 const Path = require('path');
 const axios = require('axios');
+const shell = require('shelljs');
 const CronJob = require('cron').CronJob;
 require('dotenv').config()
 const hostname = process.env.HOST ;
@@ -92,6 +93,16 @@ function onIntentDetected(intent) {
     } else {
       SnipsMopidy.speak(`No entendí ${intentName}`);
     }
+  } else if (intentName == 'cristianpb:restartApplication') {
+    const {slots = null} = intent
+    if ((slots) && (slots.length > 0)) {
+      const {value = null} = slots[0]
+      console.log("GET", value['value']);
+      if (value['value'] == 'Snips') restartSnips();
+      if (value['value'] == 'Mopidy') restartMopidy();
+    } else {
+      SnipsMopidy.speak(`No entendí ${intentName}`);
+    }
   } else {
     SnipsMopidy.speak("No se que hacer");
   }
@@ -105,6 +116,23 @@ function onHotwordDetected() {
 function onListeningStateChanged(listening) {
   console.log("[Snips Log] " + (listening ? "Start" : "Stop") + " listening");
 }
+
+function restartSnips() {
+  shell.exec(`systemctl restart "snips-*"`, function(code, stdout, stderr) {
+    console.log('Exit code:', code);
+    console.log('Program output:', stdout);
+    console.log('Program stderr:', stderr);
+  });
+}
+
+function restartMopidy() {
+  shell.exec(`systemctl restart mopidy.service`, function(code, stdout, stderr) {
+    console.log('Exit code:', code);
+    console.log('Program output:', stdout);
+    console.log('Program stderr:', stderr);
+  });
+}
+
 
 async function downloadPostcast(url) {
   let parser = new Parser();

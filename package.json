@@ -14,6 +14,7 @@
     "dotenv": "^8.0.0",
     "mopidy": "^1.0.0",
     "mqtt": "^2.18.8",
-    "rss-parser": "^3.7.2"
+    "rss-parser": "^3.7.2",
+    "shelljs": "^0.8.3"
   }
 }
