@@ -1,3 +1,4 @@
+const fs = require('fs');
 const mqtt = require('mqtt');
 const Mopidy = require("mopidy");
 const RADIOS = require('./radios');
@@ -80,13 +81,39 @@ class SnipsMopidy {
     this.speak('Siguiente canción');
     mopidy_client.playback.next();
   }
+
+  radioOn(intent) {
+    console.log(intent);
+    const {slots = null} = intent;
+    if ((slots) && (slots.length > 0)) {
+      const {value = null} = slots[0];
+      if (Object.keys(RADIOS).indexOf(value.value) >= 0) {
+        this.setMyRadios(value.value);
+      } else if (value.value == 'la luciérnaga') {
+        const files = fs.readdirSync(process.env.PODCAST_DIR);
+        console.log(`file://${process.env.PODCAST_DIR}/${files[files.length-1]}`);
+        this.setRadio('la luciérnaga', [`file://${process.env.PODCAST_DIR}/${files[files.length-1]}`, `file://${process.env.PODCAST_DIR}/${files[files.length-2]}`]);
+      } else {
+        this.speak("Radio desconocida")
+        console.log("Unkown");
+      }
+    } else {
+      SnipsMopidy.speak("No entendí");
+    }
+  }
+
+
 };
 
 const snipsmopidy = new SnipsMopidy()
 mopidy_client.on("state:online", async () => {
+	snipsmopidy.speak("Connectado");
   snipsmopidy.volumeSet(13);
   //snipsmopidy.setMyRadios('ascensor');
   //snipsmopidy.searchArtist('ozuna');
   //snipsmopidy.nextSong();
+})
+mopidy_client.on("state:offline", async () => {
+	snipsmopidy.speak("Desconectado");
 })
 module.exports = snipsmopidy;
