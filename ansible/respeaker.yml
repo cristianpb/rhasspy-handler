@@ -1,0 +1,18 @@
+# ansible-playbook -i ~/ansible/hosts ./playbooks/respeaker.yml
+---
+- hosts: raspicam
+  gather_facts: yes
+  tasks:
+
+    - name: Clone bitbucket repo
+      git:
+        repo: https://github.com/respeaker/seeed-voicecard
+        dest: /home/pi/seeed-voicecard
+    
+    - name: task name
+      become: yes
+      shell:
+        cmd: ./install.sh
+        chdir: /home/pi/seeed-voicecard
+    - name: Unconditionally reboot the machine with all defaults
+      reboot:

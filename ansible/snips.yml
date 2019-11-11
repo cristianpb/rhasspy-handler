@@ -1,0 +1,36 @@
+
+# ansible-playbook -i ~/ansible/hosts /playbooks/setup-retropie-pi-cade.yml
+---
+- hosts: raspicam
+  gather_facts: yes
+  tasks:
+
+    - name: Update repositories cache and install "dirmngr" package
+      become: yes
+      apt:
+        name: dirmngr
+        update_cache: yes
+
+    - name: Add snips repository
+      become: yes
+      command: bash -c 'echo "deb https://raspbian.snips.ai/$(lsb_release -cs) stable main" > /etc/apt/sources.list.d/snips.list'
+
+    - name: Add an apt key by id from a keyserver
+      become: yes
+      apt_key:
+        keyserver: pgp.mit.edu
+        id: D4F50CDCA10A2849
+
+    - name: Install snips platform voice
+      become: yes
+      apt:
+        name: snips-platform-voice
+        update_cache: yes
+
+    - name: Install skill server
+      become: yes
+      apt:
+        name: 
+          - snips-template 
+          - snips-skill-server
+        update_cache: yes
