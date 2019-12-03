@@ -5,33 +5,32 @@ const Path = require('path');
 const axios = require('axios');
 const shell = require('shelljs');
 const CronJob = require('cron').CronJob;
+const Gpio = require('onoff').Gpio;
+const LEDPin = new Gpio(12, 'out'); // declare GPIO4 an output
 require('dotenv').config()
 const hostname = process.env.HOST;
 const client = mqtt.connect(`mqtt://${hostname}`);
 const SnipsMopidy = require('./snipsmopidy');
 
-let cron = new CronJob({
-  // At minute 0 past every hour from 9 through 21.
+const job = new CronJob({
+  // At minute 0 past every hour from 9 through 21.”
   cronTime: '00 9-21 * * *',
-  onTick: () => {
+  onTick: function () {
     let currentTime = new Date();
-    client.publish(
-      'hermes/tts/say',
-      `{"siteId":"default","lang": "es", "text":"Son las ${currentTime
-        .toTimeString()
-        .substring(0, 2)}"}`
-    );
+    SnipsMopidy.speak(`Feliz navidad, son las ${currentTime.toTimeString().substring(0, 2)}`);
   },
-  start: true,
   timeZone: 'Europe/Paris'
 });
+job.start();
 
-if (process.env.BLUETOOTH == 'true') {
+if (process.env.BLUETOOTH === 'true') {
   const blue = require('blue');
 }
 
+SnipsMopidy.speak(`Duérmase chino marica`);
+
 /* On Connect MQTT */
-client.on('connect', () => {
+client.on('connect', function () {
   console.log('[Snips Log] Connected to MQTT broker ' + hostname);
   downloadPostcast(
     'http://fapi-top.prisasd.com/podcast/caracol/la_luciernaga/itunestfp/podcast.xml'
@@ -81,6 +80,14 @@ function onIntentDetected (intent) {
     } else {
       SnipsMopidy.speak(`No entendí ${intentName}`);
     }
+  } else if (intentName === 'cristianpb:lightsOn') {
+    LEDPin.write(1, function () {
+      SnipsMopidy.speak(`Esta mierda se prendió`);
+    });
+  } else if (intentName === 'cristianpb:lightsOff') {
+    LEDPin.write(0, function () {
+      SnipsMopidy.speak(`Duérmase chino marica`);
+    });
   } else if (intentName === 'cristianpb:restartApplication') {
     const {slots = null} = intent
     if ((slots) && (slots.length > 0)) {
@@ -156,7 +163,7 @@ async function downloadPostcast (url) {
   }
 }
 
-async function downloadFile (guid, pieces) {
+async function downloadFile(guid, pieces) {
   let path = Path.resolve(process.env.PODCAST_DIR, pieces[pieces.length - 1]);
   const writer = fs.createWriteStream(path);
   const response = await axios({
@@ -171,3 +178,7 @@ async function downloadFile (guid, pieces) {
     writer.on('error', reject);
   });
 }
+
+process.on('SIGINT', function () {
+  console.log('Bye, bye!');
+});
