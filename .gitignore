@@ -2,3 +2,5 @@ node_modules/
 media
 build
 .env
+conf/*
+!conf/.gitkeep
