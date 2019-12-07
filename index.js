@@ -5,19 +5,19 @@ const Path = require('path');
 const axios = require('axios');
 const shell = require('shelljs');
 const CronJob = require('cron').CronJob;
-const Gpio = require('onoff').Gpio;
-const LEDPin = new Gpio(12, 'out'); // declare GPIO4 an output
 require('dotenv').config()
 const hostname = process.env.HOST;
 const client = mqtt.connect(`mqtt://${hostname}`);
 const SnipsMopidy = require('./snipsmopidy');
+const relay = require('./relay');
 
 const job = new CronJob({
   // At minute 0 past every hour from 9 through 21.”
   cronTime: '00 9-21 * * *',
   onTick: function () {
-    let currentTime = new Date();
-    SnipsMopidy.speak(`Feliz navidad, son las ${currentTime.toTimeString().substring(0, 2)}`);
+	  relay.blinking(5000);
+	  let currentTime = new Date();
+	  SnipsMopidy.speak(`Feliz navidad, son las ${currentTime.toTimeString().substring(0, 2).replace(/^0+/, '')}`);
   },
   timeZone: 'Europe/Paris'
 });
@@ -26,8 +26,6 @@ job.start();
 if (process.env.BLUETOOTH === 'true') {
   const blue = require('blue');
 }
-
-SnipsMopidy.speak(`Duérmase chino marica`);
 
 /* On Connect MQTT */
 client.on('connect', function () {
@@ -81,13 +79,11 @@ function onIntentDetected (intent) {
       SnipsMopidy.speak(`No entendí ${intentName}`);
     }
   } else if (intentName === 'cristianpb:lightsOn') {
-    LEDPin.write(1, function () {
-      SnipsMopidy.speak(`Esta mierda se prendió`);
-    });
+	  relay.changeState(1);
+	  SnipsMopidy.speak(`Esta mierda se prendió`);
   } else if (intentName === 'cristianpb:lightsOff') {
-    LEDPin.write(0, function () {
-      SnipsMopidy.speak(`Duérmase chino marica`);
-    });
+	  relay.changeState(0);
+	  SnipsMopidy.speak(`Duérmase chino marica`);
   } else if (intentName === 'cristianpb:restartApplication') {
     const {slots = null} = intent
     if ((slots) && (slots.length > 0)) {
@@ -106,12 +102,11 @@ function onIntentDetected (intent) {
 }
 
 function onHotwordDetected () {
-  client.publish(
-    'hermes/tts/say',
-    `{"siteId":"default","lang": "es", "text":"Si?"}`
-  );
-  console.log('[Snips Log] Hotword detected');
+	relay.blinking(1000);
+	SnipsMopidy.speak("Si?")
+	console.log('[Snips Log] Hotword detected');
 }
+
 function onListeningStateChanged (listening) {
   console.log('[Snips Log] ' + (listening ? 'Start' : 'Stop') + ' listening');
 }
