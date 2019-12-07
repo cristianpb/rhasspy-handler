@@ -24,3 +24,6 @@ ping:
 
 snips_install_assistant:
 	ansible-playbook -i conf/inventory.conf --extra-vars "assistant_file=$(assistant_file)" ansible/install_assistant.yml
+
+ansible_raspimov:
+	ansible-playbook -i conf/inventory.conf ansible/raspimov_dep.yml

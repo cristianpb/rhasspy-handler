@@ -1,0 +1,15 @@
+# ansible-playbook -i ~/ansible/hosts /playbooks/setup-retropie-pi-cade.yml
+---
+- hosts: raspimov
+  tasks:
+
+    - name: install dependencies
+      become: yes
+      package:
+        name:
+          - vim
+          - node
+          - fim
+          - git
+          - snapclient
+        state: present
