@@ -1,0 +1,20 @@
+[Unit]
+Description=Rhasspy
+After=syslog.target network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/rhasspy
+ExecStart=/bin/bash -lc './run-venv.sh --profile es'
+
+RestartSec=5
+Restart=on-failure
+
+StandardOutput=syslog
+StandardError=syslog
+
+SyslogIdentifier=rhasspy
+User=pi
+
+[Install]
+WantedBy=multi-user.target

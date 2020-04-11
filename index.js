@@ -74,21 +74,29 @@ function onIntentDetected (intent) {
     } else {
       SnipsMopidy.speak(`No entendí ${intentName}`);
     }
-  } else if (intentName === 'cristianpb:lightsOn') {
+  } else if (intentName === 'ChangeLightState') {
+	  const {slots = null} = intent
+	    if ((slots) && (slots.length > 0)) {
+	      const {value = null} = slots[0]
+		    console.log('VVV', value);
+		    if (value['value'] == 'encender') relay.changeState(1);
+		    if (value['value'] == 'apagar') relay.changeState(0);
+	    }
+  } else if (intentName === 'LightsOn') {
 	  relay.changeState(1);
 	  SnipsMopidy.speak(`Esta mierda se prendió`);
-  } else if (intentName === 'cristianpb:lightsOff') {
+  } else if (intentName === 'LightsOff') {
 	  relay.changeState(0);
 	  SnipsMopidy.speak(`Duérmase chino marica`);
-  } else if (intentName === 'cristianpb:restartApplication') {
+  } else if (intentName === 'RebootService') {
     const {slots = null} = intent
     if ((slots) && (slots.length > 0)) {
       const {value = null} = slots[0]
       console.log('GET', value['value']);
-      if (value['value'] === 'Snips') restartCommand(`systemctl restart "snips-*"`);
-      if (value['value'] === 'Mopidy') restartCommand('systemctl restart mopidy.service', 'Mopidy reiniciado');
-      if (value['value'] === 'Aplicación') restartCommand('systemctl restart handler.service', 'Applicacion reininicada');
-      if (value['value'] === 'Raspberry') restartCommand('reboot', 'Reiniciado');
+      if (value['value'] === 'raspi') restartCommand(`systemctl restart rhasspy.service`, 'rhasspy reiniciado');
+      if (value['value'] === 'mopidy') restartCommand('systemctl restart mopidy.service', 'mopidy reiniciado');
+      if (value['value'] === 'aplicación') restartCommand('systemctl restart handler.service', 'applicacion reininicada');
+      if (value['value'] === 'raspberry') restartCommand('reboot', 'reiniciado');
     } else {
       SnipsMopidy.speak(`No entendí ${intentName}`);
     }
@@ -172,4 +180,5 @@ async function downloadFile(guid, pieces) {
 
 process.on('SIGINT', function () {
   console.log('Bye, bye!');
+	process.exit(0);
 });

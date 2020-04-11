@@ -1,0 +1,14 @@
+[Unit]
+Description=Snips js handler
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/node index.js
+WorkingDirectory=/home/pi/snipshandler
+StandardOutput=inherit
+StandardError=inherit
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

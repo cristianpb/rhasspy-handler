@@ -2,16 +2,16 @@ const fs = require('fs');
 const mqtt = require('mqtt');
 const Mopidy = require('mopidy');
 const RADIOS = require('./radios');
+const axios = require('axios');
 const hostname = process.env.HOST;
-const mqttClient = mqtt.connect(`mqtt://${hostname}`);
 const mopidyClient = new Mopidy({
   webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`
 });
 
 class SnipsMopidy {
-  speak (text) {
-    console.log('READING', text);
-    mqttClient.publish('hermes/tts/say', `{"siteId":"default","lang": "es", "text": "${text}"}`)
+  async speak (text) {
+    const res = await axios({url: 'http://localhost:12101/api/text-to-speech', method: 'POST', data: `${text}`});
+    return res.status
   }
 
   volumeSet (volumeNumber) {
@@ -101,7 +101,7 @@ class SnipsMopidy {
 
 const snipsmopidy = new SnipsMopidy()
 mopidyClient.on('state:online', async () => {
-  snipsmopidy.speak('Connectado');
+  await snipsmopidy.speak('Connectado');
   snipsmopidy.volumeSet(13);
   //snipsmopidy.setMyRadios('ascensor');
   //snipsmopidy.searchArtist('ozuna');

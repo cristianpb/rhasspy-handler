@@ -1,0 +1,23 @@
+{
+  "mqtt": {
+    "enabled": true
+  },
+  "text_to_speech": {
+    "picotts": {
+      "language": "es-ES"
+    },
+    "system": "picotts"
+  },
+  "wake": {
+    "system": "snowboy",
+    "hermes": {
+      "wakeword_id": "default"
+    },
+    "snowboy": {
+      "model": "snowboy/snowboy.umdl",
+      "audio_gain": 1,
+      "sensitivity": "0.5",
+      "apply_frontend": false
+    }
+  }
+}

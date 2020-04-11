@@ -1,5 +1,3 @@
-export assistant_file := $(shell ls ${PWD}/conf/assistant_*.zip)
-
 include .env
 
 ${PODCAST_DIR}:
@@ -19,6 +17,8 @@ up: .env node_modules ${PODCAST_DIR}
 clean:
 	rm -rf node_modules
 
+# ansible
+
 ping:
 	ansible -i conf/inventory.conf -m ping all
 
@@ -27,3 +27,14 @@ snips_install_assistant:
 
 ansible_raspimov:
 	ansible-playbook -i conf/inventory.conf ansible/raspimov_dep.yml
+
+# sync code
+push:
+	rsync -avz --exclude-from '.gitignore' * raspi:~/snipshandler/
+
+pull:
+	rsync -avz --exclude-from '.gitignore' --exclude 'Makefile' raspi:~/snipshandler/* .
+
+
+#./run-venv.sh --profile es
+#mosquitto_sub -h localhost -v -t 'hermes/#' -p 1883
