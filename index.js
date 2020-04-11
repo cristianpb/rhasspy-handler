@@ -23,10 +23,6 @@ const job = new CronJob({
 });
 job.start();
 
-if (process.env.BLUETOOTH === 'true') {
-  const blue = require('blue');
-}
-
 /* On Connect MQTT */
 client.on('connect', function () {
   console.log('[Snips Log] Connected to MQTT broker ' + hostname);
