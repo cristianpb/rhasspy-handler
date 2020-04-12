@@ -1,8 +1,13 @@
 const Gpio = require('onoff').Gpio;
-let LEDPin = new Gpio(12, 'out'); // declare GPIO4 an output
 
-function blinking (blink_time = 2000) {
-	startValue = LEDPin.readSync()
+let LEDPin: any;
+
+if (process.env.DEVICE == "raspberry") {
+  LEDPin = new Gpio(12, 'out'); // declare GPIO4 an output
+}
+
+export function blinking (blink_time = 2000) {
+	const startValue = LEDPin.readSync()
 
 	// Toggle the state of the LED
 	const iv = setInterval(_ => LEDPin.writeSync(LEDPin.readSync() ^ 1), 500);
@@ -10,21 +15,15 @@ function blinking (blink_time = 2000) {
 	// Stop blinking the LED after blink_time
 	setTimeout(_ => {
 		clearInterval(iv); // Stop blinking
-		if (startValue == 1) {
+		if (startValue) {
 			console.log("Letting up", startValue)
-			LEDPin.writeSync(1)
+			LEDPin.writeSync(true)
 		} else {
-			LEDPin.writeSync(0)
+			LEDPin.writeSync(false)
 		}
 	}, blink_time);
 }
 
-function changeState (arg) {
-	console.log(arg)
+export function changeState (arg: boolean) {
 	LEDPin.writeSync(arg)
-}
-
-module.exports = {
-    blinking,
-    changeState
 }

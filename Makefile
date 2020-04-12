@@ -1,18 +1,30 @@
-include .env
+# Directory to save podcast
+# Mopidy saves this in /var/lib/mopidy/media
+export PODCAST_DIR=media
+# mqtt broker address
+export HOST="localhost"
+export DEVICE="raspberry"
+
+dummy		    := $(shell touch artifacts)
+include ./artifacts
 
 ${PODCAST_DIR}:
 	mkdir -p ${PODCAST_DIR}
 
-.env:
-	@echo "Taking default values from .env.sample"
-	cp .env.sample .env
-
 node_modules:
 	npm install
 
-up: .env node_modules ${PODCAST_DIR}
+dev: node_modules ${PODCAST_DIR}
 	@echo "$(PODCAST_DIR)"
-	node index.js
+	npm run dev
+
+up: node_modules ${PODCAST_DIR}
+	@echo "$(PODCAST_DIR)"
+	npm run start
+
+test: node_modules ${PODCAST_DIR}
+	@echo "$(PODCAST_DIR)"
+	npm run test
 
 clean:
 	rm -rf node_modules

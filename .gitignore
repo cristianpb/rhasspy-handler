@@ -5,3 +5,5 @@ build
 conf/*
 !conf/.gitkeep
 *.retry
+artifacts
+dist

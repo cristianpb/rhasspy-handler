@@ -2,9 +2,15 @@
   "name": "assistantes",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:ts": "tsc --outDir dist",
+    "build": "npm run build:ts",
+    "start": "node .",
+    "watch-ts": "tsc --outDir dist -w",
+    "watch-node": "nodemon .",
+    "dev": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
+    "test": "ts-node tests/Podcast.test.ts"
   },
   "author": "",
   "license": "ISC",
@@ -12,10 +18,20 @@
     "axios": "^0.18.0",
     "cron": "^1.7.1",
     "dotenv": "^8.0.0",
+    "htmlparser2": "^4.1.0",
     "mopidy": "^1.0.0",
     "mqtt": "^2.18.8",
     "onoff": "^5.0.1",
-    "rss-parser": "^3.7.2",
     "shelljs": "^0.8.3"
+  },
+  "devDependencies": {
+    "@types/cron": "^1.7.2",
+    "@types/mqtt": "^2.5.0",
+    "@types/node": "^13.11.1",
+    "@types/shelljs": "^0.8.7",
+    "concurrently": "^5.1.0",
+    "nodemon": "^2.0.3",
+    "ts-node": "^8.8.2",
+    "typescript": "^3.8.3"
   }
 }

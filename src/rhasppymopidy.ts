@@ -1,20 +1,21 @@
-const fs = require('fs');
-const mqtt = require('mqtt');
-const Mopidy = require('mopidy');
-const RADIOS = require('./radios');
-const axios = require('axios');
+import fs from 'fs';
+import axios from 'axios';
+import Mopidy from "mopidy";
+import { RADIOS } from './radios';
+
 const hostname = process.env.HOST;
 const mopidyClient = new Mopidy({
   webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`
 });
 
-class SnipsMopidy {
-  async speak (text) {
-    const res = await axios({url: 'http://localhost:12101/api/text-to-speech', method: 'POST', data: `${text}`});
+
+export class RhasspyMopidy {
+  async speak (text: string) {
+    const res = await axios({url: `http://${hostname}:12101/api/text-to-speech`, method: 'POST', data: `${text}`});
     return res.status
   }
 
-  volumeSet (volumeNumber) {
+  volumeSet (volumeNumber: number) {
     console.log(`Volume set to ${volumeNumber}`)
     mopidyClient.mixer.setVolume([Number(volumeNumber)]);
     this.speak(`Volumen a ${volumeNumber}`);
@@ -39,7 +40,7 @@ class SnipsMopidy {
     this.speak('Silencio');
   }
 
-  async setRadio (radioName, radioUri) {
+  async setRadio (radioName: string, radioUri: string) {
     await mopidyClient.tracklist.clear()
     await mopidyClient.playback.pause()
     let tracks = await mopidyClient.tracklist.add({uris: radioUri})
@@ -57,19 +58,19 @@ class SnipsMopidy {
     }
   }
 
-  setMyRadios (radio) {
+  setMyRadios (radio: string) {
     let radioUri = RADIOS[radio]
     this.setRadio(radio, radioUri)
   }
 
-  async searchArtist (Value) {
-    console.log(`Searching for ${Value}`)
-    this.speak(`Buscando canciones de ${Value}`);
-    let result = await mopidyClient.library.search({'any': Value, 'uris': ['soundcloud:']})
+  async searchArtist (value: string) {
+    console.log(`Searching for ${value}`)
+    this.speak(`Buscando canciones de ${value}`);
+    let result = await mopidyClient.library.search({'any': value, 'uris': ['soundcloud:']})
     console.log(result);
-    let songUri = result[0]['tracks'].map(item => item.uri);
+    let songUri = result[0]['tracks'].map((item: any) => item.uri);
     console.log('Playin', songUri);
-    this.setRadio(Value, songUri);
+    this.setRadio(value, songUri);
   }
 
   nextSong () {
@@ -78,7 +79,7 @@ class SnipsMopidy {
     mopidyClient.playback.next();
   }
 
-  radioOn (intent) {
+  radioOn (intent: any) { //TODO
     console.log(intent);
     const {slots = null} = intent;
     if ((slots) && (slots.length > 0)) {
@@ -94,20 +95,40 @@ class SnipsMopidy {
         console.log('Unkown');
       }
     } else {
-      SnipsMopidy.speak('No entendí');
+      this.speak('No entendí');
     }
   }
+
+  close() {
+    mopidyClient.off();
+  }
+
+  subscribeOnline() {
+    mopidyClient.on('state:online', async () => {
+      await this.speak('Conectado');
+      this.volumeSet(13);
+    })
+  }
+
+  subscribeOffline() {
+    mopidyClient.on('state:offline', async () => {
+      this.speak('Desconectado');
+    })
+  }
+
+
 };
 
-const snipsmopidy = new SnipsMopidy()
-mopidyClient.on('state:online', async () => {
-  await snipsmopidy.speak('Connectado');
-  snipsmopidy.volumeSet(13);
-  //snipsmopidy.setMyRadios('ascensor');
-  //snipsmopidy.searchArtist('ozuna');
-  //snipsmopidy.nextSong();
-})
-//mopidyClient.on('state:offline', async () => {
-//  snipsmopidy.speak('Desconectado');
+//const rhasspymopidy = new RhasppyMopidy()
+//mopidyClient.on('state:online', async () => {
+//  await rhasspymopidy.speak('Connectado');
+//  rhasspymopidy.volumeSet(13);
+//  //rhasspymopidy.setMyRadios('ascensor');
+//  //rhasspymopidy.searchArtist('ozuna');
+//  //rhasspymopidy.nextSong();
 //})
-module.exports = snipsmopidy;
+//mopidyClient.on('state:offline', async () => {
+//  rhasspymopidy.speak('Desconectado');
+//})
+//export.defaults = RhasppyMopidy
+//module.exports = RhasppyMopidy;

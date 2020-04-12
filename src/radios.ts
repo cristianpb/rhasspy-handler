@@ -1,4 +1,9 @@
-const RADIOS = {
+interface Radios {
+  [key: string]: any; // Index signature
+}
+
+
+export const RADIOS: Radios = {
   'vibra': ['tunein:station:s84760'],
   'la mega': ['tunein:station:s86588'],
   'la joya': ['tunein:station:s192004'],
@@ -15,5 +20,3 @@ const RADIOS = {
   'las noticias': ['podcast+http://radiofrance-podcast.net/podcast09/rss_12494.xml'],
   'noventa': ['tunein:station:s89818']
 };
-
-module.exports = RADIOS;
