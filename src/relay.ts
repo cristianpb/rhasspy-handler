@@ -16,14 +16,15 @@ export function blinking (blink_time = 2000) {
 	setTimeout(_ => {
 		clearInterval(iv); // Stop blinking
 		if (startValue) {
-			console.log("Letting up", startValue)
-			LEDPin.writeSync(true)
+			LEDPin.writeSync(1)
 		} else {
-			LEDPin.writeSync(false)
+			LEDPin.writeSync(0)
 		}
 	}, blink_time);
 }
 
-export function changeState (arg: boolean) {
-	LEDPin.writeSync(arg)
+export function changeState (arg: number) {
+  if (process.env.DEVICE == "raspberry") {
+    LEDPin.writeSync(arg)
+  }
 }
