@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "cron": "^1.7.1",
     "dotenv": "^8.0.0",
     "mopidy": "^1.0.0",
