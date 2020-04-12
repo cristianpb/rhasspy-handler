@@ -21,14 +21,14 @@ const job = new CronJob({
 job.start();
 
 /* On Connect MQTT */
-client.on('connect', function () {
+client.on('connect', () => {
   console.log('[Handler Log] Connected to MQTT broker ' + hostname);
   client.subscribe('hermes/#');
   rhasspymopidy.subscribeOnline();
 });
 
 /* On Message */
-client.on('message', function (topic, message) {
+client.on('message', (topic, message) => {
   if (topic === 'hermes/asr/startListening') {
     onListeningStateChanged(true);
   } else if (topic === 'hermes/asr/stopListening') {
@@ -36,24 +36,54 @@ client.on('message', function (topic, message) {
   } else if (topic.match(/hermes\/hotword\/.+\/detected/g) !== null) {
     onHotwordDetected()
   } else if (topic.match(/hermes\/intent\/.+/g) !== null) {
-    onIntentDetected(JSON.parse(message));
+    onIntentDetected(JSON.parse(message.toString()));
   }
 });
 
+interface Slot {
+  slotName: string;
+  confidence: number;
+  value: {
+    kind: string;
+    value: string;
+  }
+  rawValue: string
+}
+
+interface Intent {
+  sessionId: string;
+  siteId: string;
+  input: string;
+  intent: {
+    intentName: string;
+    confidenceScore: number;
+  }
+  slots: Slot[];
+  asrTokens: [];
+  asrConfidence: number;
+}
+
 /* Snips actions */
-function onIntentDetected (intent: any) { //TODO
+function onIntentDetected (intent: Intent) { //TODO
   console.log(`[Handler Log] Intent detected: ${JSON.stringify(intent)}`);
   const {intent: {intentName} = null} = intent;
   if (intentName === 'cristianpb:radioOn') {
-    rhasspymopidy.radioOn(intent);
+    const {slots = null} = intent
+    let slotValues; 
+    if ((slots) && (slots.length > 0)) {
+      slotValues = slots.map((slot: Slot) => slot.value.value)
+      rhasspymopidy.radioOn(slotValues[0]);
+    } else {
+      rhasspymopidy.radioOn(null);
+    }
   } else if (intentName === 'cristianpb:speakerInterrupt') {
     rhasspymopidy.stopMopidy();
   } else if (intentName === 'cristianpb:playArtist') {
     console.log(intent);
     const {slots = null} = intent
     if ((slots) && (slots.length > 0)) {
-      const {value = null} = slots[0];
-      rhasspymopidy.searchArtist([value.value]);
+      const slotValues = slots.map((slot: Slot) => slot.value.value)
+      rhasspymopidy.searchArtist(slotValues[0]);
     }
   } else if (intentName === 'cristianpb:volumeDown') {
     rhasspymopidy.volumeDown();
@@ -64,19 +94,19 @@ function onIntentDetected (intent: any) { //TODO
   } else if (intentName === 'cristianpb:volumeSet') {
     const {slots = null} = intent
     if ((slots) && (slots.length > 0)) {
-      const {value = null} = slots[0]
-      rhasspymopidy.volumeSet(value['value']);
+      const slotValues = slots.map((slot: Slot) => parseInt(slot.value.value))
+      rhasspymopidy.volumeSet(slotValues[0]);
     } else {
       rhasspymopidy.speak(`No entendí ${intentName}`);
     }
   } else if (intentName === 'ChangeLightState') {
 	  const {slots = null} = intent
-	    if ((slots) && (slots.length > 0)) {
-	      const {value = null} = slots[0]
-		    console.log('VVV', value);
-		    if (value['value'] == 'encender') changeState(true);
-		    if (value['value'] == 'apagar') changeState(false);
-	    }
+    if ((slots) && (slots.length > 0)) {
+      const {value = null} = slots[0]
+      console.log('VVV', value);
+      if (value['value'] == 'encender') changeState(true);
+      if (value['value'] == 'apagar') changeState(false);
+    }
   } else if (intentName === 'LightsOn') {
 	  changeState(true);
 	  rhasspymopidy.speak(`Esta mierda se prendió`);

@@ -22,15 +22,11 @@ export class RhasspyMopidy {
   }
 
   volumeUp () {
-    console.log('Volume up');
-    mopidyClient.mixer.setVolume([50]);
-    this.speak('Volumen alto');
+    this.volumeSet(50)
   }
 
   async volumeDown () {
-    console.log('Volume down');
-    mopidyClient.mixer.setVolume([5])
-    this.speak('Volumen bajo');
+    this.volumeSet(5)
   }
 
   async stopMopidy () {
@@ -40,7 +36,7 @@ export class RhasspyMopidy {
     this.speak('Silencio');
   }
 
-  async setRadio (radioName: string, radioUri: string) {
+  async setRadio (radioName: string, radioUri: string[]) {
     await mopidyClient.tracklist.clear()
     await mopidyClient.playback.pause()
     let tracks = await mopidyClient.tracklist.add({uris: radioUri})
@@ -69,7 +65,7 @@ export class RhasspyMopidy {
     let result = await mopidyClient.library.search({'any': value, 'uris': ['soundcloud:']})
     console.log(result);
     let songUri = result[0]['tracks'].map((item: any) => item.uri);
-    console.log('Playin', songUri);
+    console.log('Playing', songUri);
     this.setRadio(value, songUri);
   }
 
@@ -79,23 +75,17 @@ export class RhasspyMopidy {
     mopidyClient.playback.next();
   }
 
-  radioOn (intent: any) { //TODO
-    console.log(intent);
-    const {slots = null} = intent;
-    if ((slots) && (slots.length > 0)) {
-      const {value = null} = slots[0];
-      if (Object.keys(RADIOS).indexOf(value.value) >= 0) {
-        this.setMyRadios(value.value);
-      } else if (value.value === 'la luciérnaga') {
-        const files = fs.readdirSync(process.env.PODCAST_DIR);
-        console.log(`file://${process.env.PODCAST_DIR}/${files[files.length - 1]}`);
-        this.setRadio('la luciérnaga', [`file://${process.env.PODCAST_DIR}/${files[files.length - 1]}`, `file://${process.env.PODCAST_DIR}/${files[files.length-2]}`]);
-      } else {
-        this.speak('Radio desconocida')
-        console.log('Unkown');
-      }
+  radioOn (slotValue: string|null) {
+    console.log(slotValue);
+    if (Object.keys(RADIOS).indexOf(slotValue) >= 0) {
+      this.setMyRadios(slotValue);
+    } else if (slotValue === 'la luciérnaga') {
+      const files = fs.readdirSync(process.env.PODCAST_DIR);
+      console.log(`file://${process.env.PODCAST_DIR}/${files[files.length - 1]}`);
+      this.setRadio('la luciérnaga', [`file://${process.env.PODCAST_DIR}/${files[files.length - 1]}`, `file://${process.env.PODCAST_DIR}/${files[files.length-2]}`]);
     } else {
-      this.speak('No entendí');
+      console.log('Unkown');
+      this.speak('Radio desconocida')
     }
   }
 
@@ -118,17 +108,3 @@ export class RhasspyMopidy {
 
 
 };
-
-//const rhasspymopidy = new RhasppyMopidy()
-//mopidyClient.on('state:online', async () => {
-//  await rhasspymopidy.speak('Connectado');
-//  rhasspymopidy.volumeSet(13);
-//  //rhasspymopidy.setMyRadios('ascensor');
-//  //rhasspymopidy.searchArtist('ozuna');
-//  //rhasspymopidy.nextSong();
-//})
-//mopidyClient.on('state:offline', async () => {
-//  rhasspymopidy.speak('Desconectado');
-//})
-//export.defaults = RhasppyMopidy
-//module.exports = RhasppyMopidy;
