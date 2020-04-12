@@ -3,6 +3,7 @@ import { exec } from 'shelljs';
 import { CronJob } from 'cron';
 import { RhasspyMopidy } from './rhasppymopidy';
 import { blinking, changeState } from './relay';
+import { ledsOn, ledsOff } from './lights';
 import { Slot, Intent } from './@types/intent';
 
 const hostname = process.env.HOST;
@@ -25,17 +26,22 @@ job.start();
 client.on('connect', () => {
   console.log('[Handler Log] Connected to MQTT broker ' + hostname);
   client.subscribe('hermes/#');
+  client.subscribe('rhasspy/#');
   rhasspymopidy.subscribeOnline();
 });
 
 /* On Message */
 client.on('message', (topic, message) => {
-  if (topic === 'hermes/asr/startListening') {
-    onListeningStateChanged(true);
-  } else if (topic === 'hermes/asr/stopListening') {
-    onListeningStateChanged(false);
-  } else if (topic.match(/hermes\/hotword\/.+\/detected/g) !== null) {
-    onHotwordDetected()
+  if (topic === 'rhasspy/es/transition/SnowboyWakeListener') {
+    if (message.toString() == 'loaded') {
+      onListeningStateChanged(true);
+    } else {
+      onListeningStateChanged(false);
+    }
+  } else if (topic == 'rhasspy/es/transition/WebrtcvadCommandListener') {
+    if (message.toString() == 'listening') {
+      onHotwordDetected()
+    }
   } else if (topic.match(/hermes\/intent\/.+/g) !== null) {
     onIntentDetected(JSON.parse(message.toString()));
   }
@@ -106,6 +112,8 @@ function onHotwordDetected () {
 }
 
 function onListeningStateChanged (listening: boolean) {
+  if (listening) ledsOn()
+  if (!listening) ledsOff()
   console.log('[Handler Log] ' + (listening ? 'Start' : 'Stop') + ' listening');
 }
 
