@@ -3,6 +3,7 @@ import { exec } from 'shelljs';
 import { CronJob } from 'cron';
 import { RhasspyMopidy } from './rhasppymopidy';
 import { blinking, changeState } from './relay';
+import { Slot, Intent } from './@types/intent';
 
 const hostname = process.env.HOST;
 const client = connect(`mqtt://${hostname}`);
@@ -40,56 +41,23 @@ client.on('message', (topic, message) => {
   }
 });
 
-interface Slot {
-  slotName: string;
-  confidence: number;
-  value: {
-    kind: string;
-    value: string;
-  }
-  rawValue: string
-}
-
-interface Intent {
-  sessionId: string;
-  siteId: string;
-  input: string;
-  intent: {
-    intentName: string;
-    confidenceScore: number;
-  }
-  slots: Slot[];
-  asrTokens: [];
-  asrConfidence: number;
-}
-
-/* Snips actions */
-function onIntentDetected (intent: Intent) { //TODO
+/* Rhasspy actions */
+export function onIntentDetected (intent: Intent) { //TODO
   console.log(`[Handler Log] Intent detected: ${JSON.stringify(intent)}`);
   const {intent: {intentName} = null} = intent;
+  const {slots = null} = intent
+  let slotValues; 
+  if ((slots) && (slots.length > 0)) {
+    slotValues = slots.map((slot: Slot) => slot.value.value)[0]
+  }
   if (intentName === 'RadioOn') {
-    const {slots = null} = intent
-    let slotValues; 
-    if ((slots) && (slots.length > 0)) {
-      slotValues = slots.map((slot: Slot) => slot.value.value)
-      rhasspymopidy.radioOn(slotValues[0]);
-    } else {
-      rhasspymopidy.radioOn(null);
-    }
+    rhasspymopidy.radioOn(slotValues);
   } else if (intentName === 'SpeakerInterrupt') {
     rhasspymopidy.stopMopidy();
   } else if (intentName === 'PlayArtist') {
-    const {slots = null} = intent
-    if ((slots) && (slots.length > 0)) {
-      const slotValues = slots.map((slot: Slot) => slot.value.value)
-      rhasspymopidy.searchArtist(slotValues[0]);
-    }
+    rhasspymopidy.searchArtist(slotValues);
   } else if (intentName === 'PlayList') {
-    const {slots = null} = intent
-    if ((slots) && (slots.length > 0)) {
-      const slotValues = slots.map((slot: Slot) => slot.value.value)
-      rhasspymopidy.setPlaylist(slotValues[0]);
-    }
+    rhasspymopidy.setPlaylist(slotValues);
   } else if (intentName === 'VolumeDown') {
     rhasspymopidy.volumeDown();
   } else if (intentName === 'NextSong') {
@@ -97,19 +65,10 @@ function onIntentDetected (intent: Intent) { //TODO
   } else if (intentName === 'VolumeUp') {
     rhasspymopidy.volumeUp();
   } else if (intentName === 'VolumeSet') {
-    const {slots = null} = intent
-    if ((slots) && (slots.length > 0)) {
-      const slotValues = slots.map((slot: Slot) => parseInt(slot.value.value))
-      rhasspymopidy.volumeSet(slotValues[0]);
+    if (slotValues) {
+      rhasspymopidy.volumeSet(parseInt(slotValues));
     } else {
       rhasspymopidy.speak(`No se que volumen poner`);
-    }
-  } else if (intentName === 'ChangeLightState') {
-	  const {slots = null} = intent
-    if ((slots) && (slots.length > 0)) {
-      const slotValues = slots.map((slot: Slot) => slot.value.value)
-      if (slotValues[0] == 'encender') changeState(1);
-      if (slotValues[0] == 'apagar') changeState(0);
     }
   } else if (intentName === 'LightsOn') {
 	  changeState(1);
@@ -118,16 +77,22 @@ function onIntentDetected (intent: Intent) { //TODO
 	  changeState(0);
 	  rhasspymopidy.speak(`apagado`);
   } else if (intentName === 'RebootService') {
-    const {slots = null} = intent
-    if ((slots) && (slots.length > 0)) {
-      const {value = null} = slots[0]
-      console.log('GET', value['value']);
-      if (value['value'] === 'raspi') restartCommand(`systemctl restart rhasspy.service`, 'rhasspy reiniciado');
-      if (value['value'] === 'mopidy') restartCommand('systemctl restart mopidy.service', 'mopidy reiniciado');
-      if (value['value'] === 'aplicación') restartCommand('systemctl restart handler.service', 'applicacion reininicada');
-      if (value['value'] === 'raspberry') restartCommand('reboot', 'reiniciado');
-    } else {
-      rhasspymopidy.speak(`No entendí ${intentName}`);
+    switch (slotValues) {
+      case 'raspi':
+        restartCommand(`systemctl restart rhasspy.service`, 'rhasspy reiniciado');
+        break;
+      case 'mopidy':
+        restartCommand('systemctl restart mopidy.service', 'mopidy reiniciado');
+        break;
+      case 'aplicación':
+        restartCommand('systemctl restart handler.service', 'applicacion reininicada');
+        break;
+      case 'raspberry':
+        restartCommand('reboot', 'reiniciado');
+        break;
+      default:
+        rhasspymopidy.speak(`No entendí ${intentName}`);
+        break;
     }
   } else {
     rhasspymopidy.speak('No se que hacer');

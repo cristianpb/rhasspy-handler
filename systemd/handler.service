@@ -1,10 +1,10 @@
 [Unit]
 Description=Snips js handler
-After=network.target
+After=network.target rhasspy.target
 
 [Service]
-ExecStart=/usr/bin/node index.js
-WorkingDirectory=/home/pi/snipshandler
+ExecStart=/usr/bin/make up
+WorkingDirectory=/home/pi/rhasspyhandler
 StandardOutput=inherit
 StandardError=inherit
 Restart=on-failure
