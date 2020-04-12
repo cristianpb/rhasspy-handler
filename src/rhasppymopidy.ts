@@ -1,10 +1,10 @@
 import fs from 'fs';
 import axios from 'axios';
-import Mopidy from "mopidy";
+import Mopidy from 'mopidy';
 import { RADIOS } from './radios';
 
 const hostname = process.env.HOST;
-const mopidyClient = new Mopidy({
+export const mopidyClient: any = new Mopidy({
   webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`
 });
 
@@ -37,8 +37,8 @@ export class RhasspyMopidy {
   }
 
   async setRadio (radioName: string, radioUri: string[]) {
+    await mopidyClient.playback.stop()
     await mopidyClient.tracklist.clear()
-    await mopidyClient.playback.pause()
     let tracks = await mopidyClient.tracklist.add({uris: radioUri})
     console.log('Tracks', tracks);
     if (radioUri[0].includes('podcast')) {
@@ -69,6 +69,16 @@ export class RhasspyMopidy {
     this.setRadio(value, songUri);
   }
 
+  async setPlaylist(playlistName: string) {
+    const playlists = await mopidyClient.playlists.asList();
+    const playlist = await playlists.find((playlist: Playlist) => playlist.name === playlistName.replace(' ', '-'))
+    const items = await mopidyClient.playlists.getItems({uri: playlist.uri})
+    await mopidyClient.playback.stop()
+    await mopidyClient.tracklist.clear()
+    const tracks = await mopidyClient.tracklist.add({uris: items.map((item: Track) => item.uri)})
+    await mopidyClient.playback.play({tlid: tracks[0].tlid});
+  }
+
   nextSong () {
     console.log('Next');
     this.speak('Siguiente canción');
@@ -77,7 +87,7 @@ export class RhasspyMopidy {
 
   radioOn (slotValue: string|null) {
     console.log(slotValue);
-    if (Object.keys(RADIOS).indexOf(slotValue) >= 0) {
+    if (slotValue in RADIOS) {
       this.setMyRadios(slotValue);
     } else if (slotValue === 'la luciérnaga') {
       const files = fs.readdirSync(process.env.PODCAST_DIR);
@@ -106,5 +116,19 @@ export class RhasspyMopidy {
     })
   }
 
-
 };
+
+interface Playlist {
+  __model__: string;
+  uri: string;  //'m3u:viva-latino.m3u',
+  name: string; //'viva-latino',
+  type: string; // 'playlist' }
+}
+
+interface Track {
+  __model__: string; // 'Ref',
+  uri: string; //'file:///var/lib/mopidy/music/ROSAL%C3%83%C2%8DA%20-%20Dolerme.m4a',
+  name: string; // 'ROSALA - DOLERME - LETRA - LYRICS (English Translation)',
+  type: string; //  'track'
+}
+

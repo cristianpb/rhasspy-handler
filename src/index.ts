@@ -67,7 +67,7 @@ interface Intent {
 function onIntentDetected (intent: Intent) { //TODO
   console.log(`[Handler Log] Intent detected: ${JSON.stringify(intent)}`);
   const {intent: {intentName} = null} = intent;
-  if (intentName === 'cristianpb:radioOn') {
+  if (intentName === 'RadioOn') {
     const {slots = null} = intent
     let slotValues; 
     if ((slots) && (slots.length > 0)) {
@@ -76,43 +76,47 @@ function onIntentDetected (intent: Intent) { //TODO
     } else {
       rhasspymopidy.radioOn(null);
     }
-  } else if (intentName === 'cristianpb:speakerInterrupt') {
+  } else if (intentName === 'SpeakerInterrupt') {
     rhasspymopidy.stopMopidy();
-  } else if (intentName === 'cristianpb:playArtist') {
-    console.log(intent);
+  } else if (intentName === 'PlayArtist') {
     const {slots = null} = intent
     if ((slots) && (slots.length > 0)) {
       const slotValues = slots.map((slot: Slot) => slot.value.value)
       rhasspymopidy.searchArtist(slotValues[0]);
     }
-  } else if (intentName === 'cristianpb:volumeDown') {
+  } else if (intentName === 'PlayList') {
+    const {slots = null} = intent
+    if ((slots) && (slots.length > 0)) {
+      const slotValues = slots.map((slot: Slot) => slot.value.value)
+      rhasspymopidy.setPlaylist(slotValues[0]);
+    }
+  } else if (intentName === 'VolumeDown') {
     rhasspymopidy.volumeDown();
-  } else if (intentName === 'cristianpb:nextSong') {
+  } else if (intentName === 'NextSong') {
     rhasspymopidy.nextSong();
-  } else if (intentName === 'cristianpb:volumeUp') {
+  } else if (intentName === 'VolumeUp') {
     rhasspymopidy.volumeUp();
-  } else if (intentName === 'cristianpb:volumeSet') {
+  } else if (intentName === 'VolumeSet') {
     const {slots = null} = intent
     if ((slots) && (slots.length > 0)) {
       const slotValues = slots.map((slot: Slot) => parseInt(slot.value.value))
       rhasspymopidy.volumeSet(slotValues[0]);
     } else {
-      rhasspymopidy.speak(`No entendí ${intentName}`);
+      rhasspymopidy.speak(`No se que volumen poner`);
     }
   } else if (intentName === 'ChangeLightState') {
 	  const {slots = null} = intent
     if ((slots) && (slots.length > 0)) {
-      const {value = null} = slots[0]
-      console.log('VVV', value);
-      if (value['value'] == 'encender') changeState(true);
-      if (value['value'] == 'apagar') changeState(false);
+      const slotValues = slots.map((slot: Slot) => slot.value.value)
+      if (slotValues[0] == 'encender') changeState(1);
+      if (slotValues[0] == 'apagar') changeState(0);
     }
   } else if (intentName === 'LightsOn') {
-	  changeState(true);
-	  rhasspymopidy.speak(`Esta mierda se prendió`);
+	  changeState(1);
+	  rhasspymopidy.speak(`encendido`);
   } else if (intentName === 'LightsOff') {
-	  changeState(false);
-	  rhasspymopidy.speak(`Duérmase chino marica`);
+	  changeState(0);
+	  rhasspymopidy.speak(`apagado`);
   } else if (intentName === 'RebootService') {
     const {slots = null} = intent
     if ((slots) && (slots.length > 0)) {

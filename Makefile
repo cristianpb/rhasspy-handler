@@ -1,9 +1,9 @@
 # Directory to save podcast
 # Mopidy saves this in /var/lib/mopidy/media
 export PODCAST_DIR=media
-# mqtt broker address
-export HOST="localhost"
-export DEVICE="raspberry"
+# mqtt broker and mopidy hostname
+export HOST=localhost
+export DEVICE=raspberry
 
 dummy		    := $(shell touch artifacts)
 include ./artifacts
@@ -13,6 +13,10 @@ ${PODCAST_DIR}:
 
 node_modules:
 	npm install
+
+build: node_modules ${PODCAST_DIR}
+	@echo "$(PODCAST_DIR)"
+	npm run build
 
 dev: node_modules ${PODCAST_DIR}
 	@echo "$(PODCAST_DIR)"
@@ -42,10 +46,10 @@ ansible_raspimov:
 
 # sync code
 push:
-	rsync -avz --exclude-from '.gitignore' * raspi:~/snipshandler/
+	rsync -avz --include 'dist' --exclude-from '.gitignore' * raspi:~/rhasspyhandler/
 
 pull:
-	rsync -avz --exclude-from '.gitignore' --exclude 'Makefile' raspi:~/snipshandler/* .
+	rsync -avz --exclude 'src' --exclude-from '.gitignore' --exclude 'Makefile' raspi:~/rhasspyhandler/* .
 
 
 #./run-venv.sh --profile es
