@@ -106,8 +106,8 @@ export function onIntentDetected (intent: Intent) { //TODO
 }
 
 function onHotwordDetected () {
-	blinking(1000);
-	rhasspymopidy.speak("Si?")
+	//blinking(1000);
+	//rhasspymopidy.speak("Si?")
 	console.log('[Handler Log] Hotword detected');
 }
 

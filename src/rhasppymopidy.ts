@@ -15,10 +15,12 @@ export class RhasspyMopidy {
     return res.status
   }
 
-  volumeSet (volumeNumber: number) {
+  volumeSet (volumeNumber: number, speak = true) {
     console.log(`Volume set to ${volumeNumber}`)
     mopidyClient.mixer.setVolume([Number(volumeNumber)]);
-    this.speak(`Volumen a ${volumeNumber}`);
+    if (speak) {
+      this.speak(`Volumen a ${volumeNumber}`);
+    }
   }
 
   volumeUp () {
@@ -106,7 +108,7 @@ export class RhasspyMopidy {
   subscribeOnline() {
     mopidyClient.on('state:online', async () => {
       await this.speak('Conectado');
-      this.volumeSet(13);
+      this.volumeSet(13, false);
     })
   }
 
