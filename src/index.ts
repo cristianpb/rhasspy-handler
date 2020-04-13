@@ -4,6 +4,7 @@ import { CronJob } from 'cron';
 import { RhasspyMopidy } from './rhasppymopidy';
 import { blinking, changeState } from './relay';
 import { ledsOn, ledsOff } from './lights';
+import { setWakeUpAlarm, listCurrentAlarms, deleteAllAlarms, listNextAlarms } from './alarms';
 import { Slot, Intent } from './@types/intent';
 
 const hostname = process.env.HOST;
@@ -82,6 +83,24 @@ export function onIntentDetected (intent: Intent) { //TODO
   } else if (intentName === 'LightsOff') {
 	  changeState(0);
 	  rhasspymopidy.speak(`apagado`);
+  } else if (intentName === 'SetWakeUpAlarm') {
+    if (slotValues && slots.length > 1) {
+      let hour = parseInt(slots.map((slot: Slot) => slot.value.value)[0])
+      let minutes = parseInt(slots.map((slot: Slot) => slot.value.value)[1])
+      if (hour < 24 && minutes < 60) {
+        setWakeUpAlarm(hour, minutes);
+      } else {
+        rhasspymopidy.speak(`Entendí ${hour} y ${minutes}`);
+      }
+    } else {
+      rhasspymopidy.speak(`No entendí la hora de la alarma`);
+    }
+  } else if (intentName === 'ListCurrentAlarms') {
+    listCurrentAlarms();
+  } else if (intentName === 'ListNextAlarms') {
+    listNextAlarms();
+  } else if (intentName === 'DeleteAllAlarms') {
+    deleteAllAlarms();
   } else if (intentName === 'RebootService') {
     switch (slotValues) {
       case 'raspi':
@@ -106,8 +125,6 @@ export function onIntentDetected (intent: Intent) { //TODO
 }
 
 function onHotwordDetected () {
-	//blinking(1000);
-	//rhasspymopidy.speak("Si?")
 	console.log('[Handler Log] Hotword detected');
 }
 

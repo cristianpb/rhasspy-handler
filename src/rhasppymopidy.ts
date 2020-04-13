@@ -8,6 +8,21 @@ export const mopidyClient: any = new Mopidy({
   webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`
 });
 
+function shuffle(array: any) {
+	let currentIndex = array.length;
+	let temporaryValue, randomIndex;
+
+	while (0 !== currentIndex) {
+		randomIndex = Math.floor(Math.random() * currentIndex);
+		currentIndex -= 1;
+
+		// And swap it with the current element.
+		temporaryValue = array[currentIndex];
+		array[currentIndex] = array[randomIndex];
+		array[randomIndex] = temporaryValue;
+	}
+	return array;
+};
 
 export class RhasspyMopidy {
   async speak (text: string) {
@@ -62,19 +77,16 @@ export class RhasspyMopidy {
   }
 
   async searchArtist (value: string) {
-    console.log(`Searching for ${value}`)
-    this.speak(`Buscando canciones de ${value}`);
-    let result = await mopidyClient.library.search({'any': value, 'uris': ['soundcloud:']})
-    console.log(result);
-    let songUri = result[0]['tracks'].map((item: any) => item.uri);
-    console.log('Playing', songUri);
-    this.setRadio(value, songUri);
+    let result = await mopidyClient.library.search({'query': {'any': [value]}, 'uris': ['local:']})
+    let songUris = result[0]['tracks'].map((item: any) => item.uri);
+    this.setRadio(value, songUris);
   }
 
   async setPlaylist(playlistName: string) {
     const playlists = await mopidyClient.playlists.asList();
     const playlist = await playlists.find((playlist: Playlist) => playlist.name === playlistName.replace(' ', '-'))
     const items = await mopidyClient.playlists.getItems({uri: playlist.uri})
+    shuffle(items);
     await mopidyClient.playback.stop()
     await mopidyClient.tracklist.clear()
     const tracks = await mopidyClient.tracklist.add({uris: items.map((item: Track) => item.uri)})
