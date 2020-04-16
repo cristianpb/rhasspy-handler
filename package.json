@@ -10,11 +10,12 @@
     "watch-ts": "tsc --outDir dist -w",
     "watch-node": "nodemon .",
     "dev": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
-    "test": "ts-node tests/CrobJobs.test.ts"
+    "test": "ts-node tests/Websockets.test.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/ws": "^7.2.4",
     "apa102-spi": "0.0.6",
     "axios": "^0.18.0",
     "cron": "^1.7.1",
@@ -23,7 +24,8 @@
     "mopidy": "^1.0.0",
     "mqtt": "^2.18.8",
     "onoff": "^5.0.1",
-    "shelljs": "^0.8.3"
+    "shelljs": "^0.8.3",
+    "ws": "^7.2.3"
   },
   "devDependencies": {
     "@types/cron": "^1.7.2",

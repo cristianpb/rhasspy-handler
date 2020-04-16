@@ -1,6 +1,7 @@
 import { CronJob } from 'cron';
 import moment from 'moment';
 import 'moment/locale/es';
+import { volumeSetSnapcast } from './snapcast';
 
 moment.locale('es');
 import { RhasspyMopidy } from './rhasppymopidy';
@@ -13,6 +14,9 @@ export function setWakeUpAlarm(hour: number, minutes: number) {
     cronTime: `${minutes} ${hour} * * *`,
     onTick: function () {
       rhasspymopidy.volumeSet(2, false);
+      volumeSetSnapcast('raspi', 70);
+      volumeSetSnapcast('raspicam', 10);
+      volumeSetSnapcast('raspimov', 10);
       rhasspymopidy.setPlaylist('café croissant');
       setTimeout(function(){ rhasspymopidy.volumeSet(4, false); }, 60000);
     },

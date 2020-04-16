@@ -119,8 +119,9 @@ export class RhasspyMopidy {
 
   subscribeOnline() {
     mopidyClient.on('state:online', async () => {
+      console.log('[Handler mopidy]: Conectado');
+      this.volumeSet(10, false);
       await this.speak('Conectado');
-      this.volumeSet(13, false);
     })
   }
 
