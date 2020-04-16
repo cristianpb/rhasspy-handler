@@ -1,32 +1,33 @@
-var Apa102spi = require('apa102-spi')
+import Apa102spi from 'apa102-spi';
 
-// Apa102spi(number of leds, clock divider)
-var LedDriver = new Apa102spi(9, 100)
+const LedDriver = new Apa102spi(4, 100)
+
+let iv:any
+
+function setLedColor(num: number) {
+	LedDriver.setLedColor(0, (num) % 3, 0, 0, 255)
+	LedDriver.setLedColor(1, (num + 1) % 3, 0, 0, 255)
+	LedDriver.setLedColor(2, (num + 2) % 3, 0, 0, 255)
+	LedDriver.sendLeds()
+}
+
+function* loopingColors() {
+	let number = 0;
+	while (true) {
+		yield setLedColor(number)
+		number++
+	}
+}
 
 export function ledsOn() {
-  // setLedColor(n, brightness 0-31, red 0-255, green 0-255, blue 0-255)
-  LedDriver.setLedColor(0, 0, 255, 0, 0)
-  LedDriver.setLedColor(1, 0, 0, 255, 0)
-  LedDriver.setLedColor(2, 1, 0, 0, 255)
-  LedDriver.setLedColor(3, 0, 255, 0, 0)
-  LedDriver.setLedColor(4, 0, 0, 255, 0)
-  LedDriver.setLedColor(5, 1, 0, 0, 255)
-  LedDriver.setLedColor(6, 0, 255, 0, 0)
-  LedDriver.setLedColor(7, 0, 0, 255, 0)
-  LedDriver.setLedColor(8, 1, 0, 0, 255)
-  LedDriver.sendLeds()
+  const it = loopingColors()
+  iv = setInterval(function(){ it.next() }, 100);
 }
 
 export function ledsOff() {
-  // setLedColor(n, brightness 0-31, red 0-255, green 0-255, blue 0-255)
+  clearInterval(iv); // Stop blinking
   LedDriver.setLedColor(0, 0, 255, 0, 0)
   LedDriver.setLedColor(1, 0, 0, 255, 0)
   LedDriver.setLedColor(2, 0, 0, 0, 255)
-  LedDriver.setLedColor(3, 0, 255, 0, 0)
-  LedDriver.setLedColor(4, 0, 0, 255, 0)
-  LedDriver.setLedColor(5, 0, 0, 0, 255)
-  LedDriver.setLedColor(6, 0, 255, 0, 0)
-  LedDriver.setLedColor(7, 0, 0, 255, 0)
-  LedDriver.setLedColor(8, 0, 0, 0, 255)
   LedDriver.sendLeds()
 }
