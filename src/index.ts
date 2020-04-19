@@ -3,7 +3,7 @@ import { exec } from 'shelljs';
 import { CronJob } from 'cron';
 import { RhasspyMopidy } from './rhasppymopidy';
 import { blinking, changeState } from './relay';
-import { ledsOn, ledsOff } from './lights';
+import { ledsOn, ledsOff, ledsYellow, ledsRed, stopLoop } from './lights';
 import { setWakeUpAlarm, listCurrentAlarms, deleteAllAlarms, listNextAlarms } from './alarms';
 import { Slot, Intent } from './@types/intent';
 
@@ -26,6 +26,7 @@ job.start();
 /* On Connect MQTT */
 client.on('connect', () => {
   console.log('[Handler Log] Connected to MQTT broker ' + hostname);
+  ledsOff()
   client.subscribe('hermes/#');
   client.subscribe('rhasspy/#');
   rhasspymopidy.subscribeOnline();
@@ -44,7 +45,10 @@ client.on('message', (topic, message) => {
       onHotwordDetected()
     }
   } else if (topic.match(/hermes\/intent\/.+/g) !== null) {
+    ledsYellow()
     onIntentDetected(JSON.parse(message.toString()));
+  } else if (topic == 'hermes/nlu/intentNotRecognized') {
+    ledsRed()
   }
 });
 
@@ -112,6 +116,9 @@ export function onIntentDetected (intent: Intent) { //TODO
       case 'aplicación':
         restartCommand('systemctl restart handler.service', 'applicacion reininicada');
         break;
+      case 'snapcast':
+        restartCommand('systemctl restart snapclient.service', 'applicacion reininicada');
+        break;
       case 'raspberry':
         restartCommand('reboot', 'reiniciado');
         break;
@@ -130,7 +137,7 @@ function onHotwordDetected () {
 
 function onListeningStateChanged (listening: boolean) {
   if (listening) ledsOn()
-  if (!listening) ledsOff()
+  if (!listening) stopLoop()
   console.log('[Handler Log] ' + (listening ? 'Start' : 'Stop') + ' listening');
 }
 
