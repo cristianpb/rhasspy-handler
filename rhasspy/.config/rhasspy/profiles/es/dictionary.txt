@@ -18,6 +18,9 @@ ascensor(2) a z e n s o r
 bad b a d
 becky b e k k i
 borra b o rr a
+brazil b r a z i l
+brazilian b r a z i l i a n
+buenas b u e n a s
 bunny b u n n i
 bájele b a j e l e
 bájele(2) b a j e l e
@@ -47,6 +50,7 @@ croissant k r o i s s a n t
 croissant(2) k r o i s s a n t
 cuales k u a l e s
 cuando k u a n d o
+cuantas k u a n t a s
 cuanto k u a n t o
 cuarenta k u a r e n t a
 cuatro k u a t r o
@@ -115,6 +119,7 @@ música m u s i k a
 next n e x t
 nicky n i k k i
 no n o
+noches n o ch e s
 noticias n o t i z i a s
 noventa n o b e n t a
 nueve n u e b e
@@ -134,6 +139,7 @@ poner p o n e r
 ponerme p o n e r m e
 ponme p o n m e
 pop p o p
+portugal p o r t u g a l
 prenda p r e n d a
 prende p r e n d e
 próxima p r o x i m a
@@ -153,6 +159,7 @@ ricardo rr i k a r d o
 ricky rr i k k i
 rolling rr o ll i n g
 ruido rr u i d o
+samba s a m b a
 seis s e i s
 sesenta s e s e n t a
 setenta s e t e n t a
@@ -160,6 +167,7 @@ siete s i e t e
 siguiente s i g i e n t e
 silencio s i l e n z i o
 sintoniza s i n t o n i z a
+snapcast s n a p k a s t
 son s o n
 sonidos s o n i d o s
 souvenirs s o u b e n i r s
