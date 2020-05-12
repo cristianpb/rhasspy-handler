@@ -1,6 +1,11 @@
-export interface Client {
+interface Client {
   name: string;
   id: string;
+}
+
+export interface Group {
+  id: string;
+  clients: Client[]
 }
 
 export interface ClientsRaw {

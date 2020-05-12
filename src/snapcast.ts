@@ -1,11 +1,10 @@
 import WebSocket from 'ws';
-import { GroupsRaw, ClientsRaw, Client } from './@types/snapcast';
+import { GroupsRaw, ClientsRaw, Group } from './@types/snapcast';
 
 const hostname = process.env.HOST;
 export const ws = new WebSocket(`ws://${hostname}:1780/jsonrpc`);
-//const ws = new WebSocket('ws://10.3.141.129:1780/jsonrpc');
 
-const clients: Client[] = []
+let groups: Group[] = []
 
 /* Error Event Handler */
 ws.on('error',  (e) => {
@@ -31,8 +30,15 @@ function handleMessage (message: any) {
   console.log('[Snapcast]: ', message)
   let { result } = JSON.parse(message)
   if (result && result.server && result.server.groups) {
-    let clientsRaw = result.server.groups.map((x:GroupsRaw) => x.clients.pop())
-    clientsRaw.forEach((x:ClientsRaw) => clients.push({id: x.id, name: x.host.name}))
+    groups = result.server.groups.map((group:GroupsRaw) => {
+      return {
+        group: group.id,
+        clients: group.clients.map((client: ClientsRaw) => {
+          console.log('client', client.host.name);
+          return {id: client.id, name: client.host.name}
+        })
+      }
+    })
     volumeSetSnapcast('raspi', 100);
     volumeSetSnapcast('raspicam', 30);
     volumeSetSnapcast('raspimov', 30);
@@ -40,7 +46,12 @@ function handleMessage (message: any) {
 }
 
 export function volumeSetSnapcast(name:string, volumeLevel: number) {
-  let id = clients.find((x:Client)=> x.name == name) ? clients.find((x:Client)=> x.name == name).id : null
+  let id
+  groups.forEach(group => {
+    group.clients.forEach(client => {
+      if (client.name === name) id = client.id
+    })
+  })
   if (id) {
     let message = { 
       id:8,

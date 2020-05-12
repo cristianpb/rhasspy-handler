@@ -1,10 +1,9 @@
 import WebSocket from 'ws';
-import { GroupsRaw, ClientsRaw, Client } from '../src/@types/snapcast';
+import { GroupsRaw, ClientsRaw, Group } from '../src/@types/snapcast';
 
-//const ws = new WebSocket('ws://localhost:1780/jsonrpc');
-const ws = new WebSocket('ws://10.3.141.129:1780/jsonrpc');
+const ws = new WebSocket('ws://localhost:1780/jsonrpc');
 
-const clients: Client[] = []
+let groups: Group[] = []
 
 /* Error Event Handler */
 ws.on('error',  (e) => {
@@ -21,8 +20,13 @@ ws.on('open', () => {
   }
   ws.send(JSON.stringify(message));
   setTimeout(function timeout() {
-    setVolume(clients.filter((x:Client)=> x.name == 'raspimov').pop().id, 20)
-  }, 1500);
+    groups.forEach(group => {
+      console.log("gop", group);
+      group.clients.forEach(client => {
+      if (client.name == 'raspimov') setVolume(client.id, 20)
+      })
+    })
+  }, 2500);
 });
  
 ws.on('message', (message: any) => {
@@ -33,8 +37,15 @@ function handleMessage (message: any) {
   console.log(message)
   let { result } = JSON.parse(message)
   if (result && result.server && result.server.groups) {
-    let clientsRaw = result.server.groups.map((x:GroupsRaw) => x.clients.pop())
-    clientsRaw.forEach((x:ClientsRaw) => clients.push({id: x.id, name: x.host.name}))
+    groups = result.server.groups.map((group:GroupsRaw) => {
+      return {
+        group: group.id,
+        clients: group.clients.map((client: ClientsRaw) => {
+          console.log('client', client.host.name);
+          return {id: client.id, name: client.host.name}
+        })
+      }
+    })
   }
 }
 
