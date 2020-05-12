@@ -1,5 +1,4 @@
 a a
-abierta a b i e r t a
 acción a k z i o n
 alarma a l a r m a
 alarmas a l a r m a s
@@ -34,7 +33,6 @@ cariñosa(2) k a r i gn o s a
 catorce k a t o r z e
 cepeda z e p e d a
 cero z e r o
-cerrada z e r r a d a
 chill ch i ll
 chillout ch i ll o u t
 cien z i e n
@@ -42,6 +40,7 @@ cinco z i n k o
 cincuenta z i n k u e n t a
 clásica k l a s i k a
 clásica(2) k l a s i k a
+cocina k o z i n a
 coloca k o l o k a
 colócame k o l o k a m e
 covers k o b e r s
@@ -62,7 +61,6 @@ dame d a m e
 dame(2) d a m e
 de d e
 deje d e j e
-del d e l
 diecinueve d i e z i n u e b e
 dieciocho d i e z i o ch o
 dieciseis d i e z i s e i s
@@ -79,15 +77,15 @@ enciende e n z i e n d e
 es e s
 escuchar e s k u ch a r
 esta e s t a
-está e s t a
 felipe f e l i p e
 france f r a n z e
-frio f r i o
+frío f r i o
 g g
-garaje g a r a j e
 global g l o b a l
 gustaría g u s t a r i a
+habitación a b i t a z i o n
 hace a z e
+hay a i
 hora o r a
 iluminación i l u m i n a z i o n
 iluminate i l u m i n a t e
@@ -144,7 +142,6 @@ prenda p r e n d a
 prende p r e n d e
 próxima p r o x i m a
 puedes p u e d e s
-puerta p u e r t a
 que k e
 quiero k i e r o
 quince k i n z e
@@ -159,6 +156,7 @@ ricardo rr i k a r d o
 ricky rr i k k i
 rolling rr o ll i n g
 ruido rr u i d o
+sala s a l a
 samba s a m b a
 seis s e i s
 sesenta s e s e n t a

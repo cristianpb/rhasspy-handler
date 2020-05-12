@@ -2,6 +2,7 @@ import { connect } from 'mqtt';
 import { exec } from 'shelljs';
 import { CronJob } from 'cron';
 import { RhasspyMopidy } from './rhasppymopidy';
+import { volumeSetSnapcast } from './snapcast';
 import { blinking, changeState } from './relay';
 import { ledsOn, ledsOff, ledsYellow, ledsRed, stopLoop } from './lights';
 import { setWakeUpAlarm, listCurrentAlarms, deleteAllAlarms, listNextAlarms } from './alarms';
@@ -69,18 +70,14 @@ export function onIntentDetected (intent: Intent) { //TODO
     rhasspymopidy.searchArtist(slotValues);
   } else if (intentName === 'PlayList') {
     rhasspymopidy.setPlaylist(slotValues);
-  } else if (intentName === 'VolumeDown') {
-    rhasspymopidy.volumeDown();
   } else if (intentName === 'NextSong') {
     rhasspymopidy.nextSong();
   } else if (intentName === 'VolumeUp') {
     rhasspymopidy.volumeUp();
+  } else if (intentName === 'VolumeDown') {
+    rhasspymopidy.volumeDown();
   } else if (intentName === 'VolumeSet') {
-    if (slotValues) {
-      rhasspymopidy.volumeSet(parseInt(slotValues));
-    } else {
-      rhasspymopidy.speak(`No se que volumen poner`);
-    }
+    processVolume(slotValues, slots)
   } else if (intentName === 'LightsOn') {
 	  changeState(1);
 	  rhasspymopidy.speak(`encendido`);
@@ -88,17 +85,7 @@ export function onIntentDetected (intent: Intent) { //TODO
 	  changeState(0);
 	  rhasspymopidy.speak(`apagado`);
   } else if (intentName === 'SetWakeUpAlarm') {
-    if (slotValues && slots.length > 1) {
-      let hour = parseInt(slots.map((slot: Slot) => slot.value.value)[0])
-      let minutes = parseInt(slots.map((slot: Slot) => slot.value.value)[1])
-      if (hour < 24 && minutes < 60) {
-        setWakeUpAlarm(hour, minutes);
-      } else {
-        rhasspymopidy.speak(`Entendí ${hour} y ${minutes}`);
-      }
-    } else {
-      rhasspymopidy.speak(`No entendí la hora de la alarma`);
-    }
+    processAlarm(slotValues, slots)
   } else if (intentName === 'ListCurrentAlarms') {
     listCurrentAlarms();
   } else if (intentName === 'ListNextAlarms') {
@@ -150,6 +137,59 @@ function restartCommand (command: string, message: string) {
     }
   });
 }
+
+const processAlarm = (slotValues: string|number, slots: Slot[]) => {
+  let hour
+  let minutes
+  if (slotValues && slots.length > 1) {
+    slots.forEach((slot: Slot) => {
+      if (slot.slotName === 'hour') {
+        hour = Number(slot.value.value)
+      }
+    })
+    slots.forEach((slot: Slot) => {
+      if (slot.slotName === 'minutes') {
+        minutes = Number(slot.value.value)
+      }
+    })
+    if (hour && minutes && hour < 24 && minutes < 60) {
+      setWakeUpAlarm(hour, minutes);
+    } else {
+      rhasspymopidy.speak(`Entendí ${hour} y ${minutes}`);
+    }
+  } else {
+    rhasspymopidy.speak(`No entendí la hora de la alarma`);
+  }
+}
+
+const processVolume = (slotValues: string|number, slots: Slot[]) => {
+  let volume
+  let place
+  if (slotValues && slots.length > 1) {
+    slots.forEach((slot: Slot) => {
+      if (slot.slotName === 'volumeLevel') {
+        volume = Number(slot.value.value)
+      }
+    })
+    slots.forEach((slot: Slot) => {
+      if (slot.slotName === 'place') {
+        place = slot.value.value
+      }
+    })
+    if (volume && volume < 100 && place) {
+      if (place === 'sala') volumeSetSnapcast('raspimov', volume)
+      if (place === 'habitación') volumeSetSnapcast('raspi', volume)
+      if (place === 'cocina') volumeSetSnapcast('raspicam', volume)
+    } else if (volume && volume < 100) {
+      rhasspymopidy.volumeSet(volume);
+    } else {
+      rhasspymopidy.speak(`No se que volumen poner`);
+    }
+  } else {
+    rhasspymopidy.speak(`No entendí el volumen a poner`);
+  }
+}
+
 
 process.on('SIGINT', function () {
   client.unsubscribe('hermes/#');
