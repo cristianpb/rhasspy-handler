@@ -8,7 +8,7 @@ import { ledsOn, ledsOff, ledsYellow, ledsRed, stopLoop } from './lights';
 import { setWakeUpAlarm, listCurrentAlarms, deleteAllAlarms, listNextAlarms } from './alarms';
 import { Slot, Intent } from './@types/intent';
 
-const hostname = process.env.HOST;
+const hostname = process.env.HOST_MQTT;
 const client = connect(`mqtt://${hostname}`);
 const rhasspymopidy = new RhasspyMopidy()
 

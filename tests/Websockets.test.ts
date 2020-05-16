@@ -1,7 +1,8 @@
 import WebSocket from 'ws';
 import { GroupsRaw, ClientsRaw, Group } from '../src/@types/snapcast';
 
-const ws = new WebSocket('ws://localhost:1780/jsonrpc');
+const hostname = process.env.HOST_SNAPCAST || 'localhost';
+const ws = new WebSocket(`ws://${hostname}:1780/jsonrpc`);
 
 let groups: Group[] = []
 

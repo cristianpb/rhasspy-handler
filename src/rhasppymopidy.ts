@@ -3,9 +3,10 @@ import axios from 'axios';
 import Mopidy from 'mopidy';
 import { RADIOS } from './radios';
 
-const hostname = process.env.HOST;
+const hostnameMopidy = process.env.HOST_MOPIDY;
+const hostnameRhasspy = process.env.HOST_RHASSPY;
 export const mopidyClient: any = new Mopidy({
-  webSocketUrl: `ws://${hostname}:6680/mopidy/ws/`
+  webSocketUrl: `ws://${hostnameMopidy}:6680/mopidy/ws/`
 });
 
 function shuffle(array: any) {
@@ -26,7 +27,7 @@ function shuffle(array: any) {
 
 export class RhasspyMopidy {
   async speak (text: string) {
-    const res = await axios({url: `http://${hostname}:12101/api/text-to-speech`, method: 'POST', data: `${text}`});
+    const res = await axios({url: `http://${hostnameRhasspy}:12101/api/text-to-speech`, method: 'POST', data: `${text}`});
     return res.status
   }
 
