@@ -1,7 +1,7 @@
 import { connect } from 'mqtt';
 import { exec } from 'shelljs';
 import { CronJob } from 'cron';
-import { RhasspyMopidy } from './rhasppymopidy';
+import { RhasspyMopidy } from './rhasspymopidy';
 import { volumeSetSnapcast } from './snapcast';
 import { blinking, changeState } from './relay';
 import { ledsOn, ledsOff, ledsYellow, ledsRed, stopLoop } from './lights';

@@ -1,4 +1,4 @@
-import { RhasspyMopidy, mopidyClient } from '../src/rhasppymopidy';
+import { RhasspyMopidy, mopidyClient } from '../src/rhasspymopidy';
 
 const rhasspymopidy = new RhasspyMopidy()
 mopidyClient.on('state:online', async () => {

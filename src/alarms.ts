@@ -4,7 +4,7 @@ import 'moment/locale/es';
 import { volumeSetSnapcast } from './snapcast';
 
 moment.locale('es');
-import { RhasspyMopidy } from './rhasppymopidy';
+import { RhasspyMopidy } from './rhasspymopidy';
 const rhasspymopidy = new RhasspyMopidy()
 
 let cronJobList: CronJob[] = [];
@@ -19,6 +19,7 @@ export function setWakeUpAlarm(hour: number, minutes: number) {
       volumeSetSnapcast('raspimov', 10);
       rhasspymopidy.setPlaylist('café croissant');
       setTimeout(function(){ rhasspymopidy.volumeSet(3, false); }, 60000);
+      setTimeout(function(){ rhasspymopidy.volumeSet(4, false); }, 600000);
     },
     timeZone: 'Europe/Paris'
   });

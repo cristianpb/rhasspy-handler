@@ -1,7 +1,7 @@
 import { connect } from 'mqtt';
 import { onIntentDetected } from '../src/index';
 import { Intent } from '../src/@types/intent';
-import { RhasspyMopidy, mopidyClient } from '../src/rhasppymopidy';
+import { RhasspyMopidy, mopidyClient } from '../src/rhasspymopidy';
 
 const hostname = process.env.HOST;
 const client = connect(`mqtt://${hostname}`);

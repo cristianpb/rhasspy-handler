@@ -27,8 +27,13 @@ function shuffle(array: any) {
 
 export class RhasspyMopidy {
   async speak (text: string) {
-    const res = await axios({url: `http://${hostnameRhasspy}:12101/api/text-to-speech`, method: 'POST', data: `${text}`});
-    return res.status
+    try {
+      const res = await axios({url: `http://${hostnameRhasspy}:12101/api/text-to-speech`, method: 'POST', data: `${text}`});
+      return res.status
+    } catch (e) {
+      console.log(e.Error.toString());
+      return false 
+    }
   }
 
   volumeSet (volumeNumber: number, speak = true) {
