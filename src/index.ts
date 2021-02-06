@@ -9,12 +9,13 @@ import { setWakeUpAlarm, listCurrentAlarms, deleteAllAlarms, listNextAlarms } fr
 import { Slot, Intent } from './@types/intent';
 
 const hostname = process.env.HOST_MQTT;
-const client = connect(`mqtt://${hostname}`);
+const PORT_MQTT = process.env.PORT_MQTT || 1883;
+const client = connect(`mqtt://${hostname}:${PORT_MQTT}`);
 const rhasspymopidy = new RhasspyMopidy()
 
 const job = new CronJob({
   // At minute 0 past every hour from 9 through 21.”
-  cronTime: '00 9-21 * * *',
+  cronTime: '00 11-21 * * 1-5',
   onTick: function () {
 	  blinking(5000);
 	  let currentTime = new Date();
@@ -35,16 +36,10 @@ client.on('connect', () => {
 
 /* On Message */
 client.on('message', (topic, message) => {
-  if (topic === 'rhasspy/es/transition/SnowboyWakeListener') {
-    if (message.toString() == 'loaded') {
-      onListeningStateChanged(true);
-    } else {
-      onListeningStateChanged(false);
-    }
-  } else if (topic == 'rhasspy/es/transition/WebrtcvadCommandListener') {
-    if (message.toString() == 'listening') {
-      onHotwordDetected()
-    }
+  if (topic == 'hermes/asr/startListening') {
+    onListeningStateChanged(true);
+  } else if (topic == 'hermes/asr/stopListening') {
+    onListeningStateChanged(false);
   } else if (topic.match(/hermes\/intent\/.+/g) !== null) {
     ledsYellow()
     onIntentDetected(JSON.parse(message.toString()));
