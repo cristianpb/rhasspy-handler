@@ -1,23 +1,48 @@
 {
-  "mqtt": {
-    "enabled": true
-  },
-  "text_to_speech": {
-    "picotts": {
-      "language": "es-ES"
+    "command": {
+        "webrtcvad": {
+            "max_sec": "10",
+            "vad_mode": "1"
+        }
     },
-    "system": "picotts"
-  },
-  "wake": {
-    "system": "snowboy",
-    "hermes": {
-      "wakeword_id": "default"
+    "dialogue": {
+        "system": "rhasspy"
     },
-    "snowboy": {
-      "model": "snowboy/snowboy.umdl",
-      "audio_gain": 1,
-      "sensitivity": "0.5",
-      "apply_frontend": false
+    "intent": {
+        "system": "fsticuffs"
+    },
+    "microphone": {
+        "arecord": {
+            "device": "sysdefault:CARD=seeed2micvoicec"
+        },
+        "system": "arecord"
+    },
+    "mqtt": {
+        "enabled": "",
+        "host": "192.168.12.142",
+        "site_id": "raspi"
+    },
+    "sounds": {
+        "aplay": {
+            "device": "sysdefault:CARD=seeed2micvoicec",
+            "volume": "0.15"
+        },
+        "system": "aplay"
+    },
+    "speech_to_text": {
+        "system": "kaldi"
+    },
+    "text_to_speech": {
+        "system": "nanotts"
+    },
+    "wake": {
+        "raven": {
+            "keywords": {
+                "chapi": {
+                    "enabled": true
+                }
+            }
+        },
+        "system": "raven"
     }
-  }
 }
