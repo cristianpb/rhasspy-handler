@@ -39,7 +39,7 @@ function handleMessage (message: any) {
         })
       }
     })
-    volumeSetSnapcast('raspi', 100);
+    volumeSetSnapcast('raspi', 30);
     volumeSetSnapcast('raspicam', 30);
     volumeSetSnapcast('raspimov', 30);
   }
