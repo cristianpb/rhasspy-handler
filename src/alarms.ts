@@ -5,7 +5,6 @@ import { volumeSetSnapcast } from './snapcast';
 
 moment.locale('es');
 import { RhasspyMopidy } from './rhasspymopidy';
-const rhasspymopidy = new RhasspyMopidy()
 
 let cronJobList: CronJob[] = [];
 
@@ -13,24 +12,24 @@ export function setWakeUpAlarm(hour: number, minutes: number) {
   const job = new CronJob({
     cronTime: `${minutes} ${hour} * * *`,
     onTick: function () {
-      rhasspymopidy.volumeSet(2, false);
+      RhasspyMopidy.volumeSet(2, false);
       volumeSetSnapcast('raspi', 10);
       volumeSetSnapcast('raspicam', 10);
       volumeSetSnapcast('raspimov', 10);
-      rhasspymopidy.setPlaylist('café croissant');
-      setTimeout(function(){ rhasspymopidy.volumeSet(3, false); }, 60000);
-      setTimeout(function(){ rhasspymopidy.volumeSet(4, false); }, 600000);
+      RhasspyMopidy.setPlaylist('café croissant');
+      setTimeout(function(){ RhasspyMopidy.volumeSet(3, false); }, 60000);
+      setTimeout(function(){ RhasspyMopidy.volumeSet(4, false); }, 600000);
     },
     timeZone: 'Europe/Paris'
   });
   job.start();
   cronJobList.push(job);
-  rhasspymopidy.speak(`La alarma sonará a las ${hour} y ${minutes}`);
+  RhasspyMopidy.speak(`La alarma sonará a las ${hour} y ${minutes}`);
 }
 
 export function deleteAllAlarms() {
   cronJobList.length = 0
-  rhasspymopidy.speak(`Alarmas borradas`);
+  RhasspyMopidy.speak(`Alarmas borradas`);
 }
 
 export function deleteOneAlarm(day: number, hour: number) {
@@ -38,10 +37,10 @@ export function deleteOneAlarm(day: number, hour: number) {
   const filteredAlarms = cronJobList.filter(item => !(item.nextDates().isSame(dateAlarm, 'hour')))
   const deletedCrons = cronJobList.length - filteredAlarms.length;
   if (deletedCrons > 0) {
-    rhasspymopidy.speak(`Alarmas borradas ${deletedCrons}`);
+    RhasspyMopidy.speak(`Alarmas borradas ${deletedCrons}`);
     cronJobList = filteredAlarms
   } else {
-    rhasspymopidy.speak(`No se borraron alarmas. Hay ${cronJobList.length}`);
+    RhasspyMopidy.speak(`No se borraron alarmas. Hay ${cronJobList.length}`);
   }
  }
 
@@ -57,17 +56,17 @@ export function listNextAlarms() {
     }
   })
   if (alarms.length > 0) {
-    rhasspymopidy.speak(`Dentro de: ${alarms.join(', ')}`);
+    RhasspyMopidy.speak(`Dentro de: ${alarms.join(', ')}`);
   } else {
-    rhasspymopidy.speak(`No hay próximas alarmas`);
+    RhasspyMopidy.speak(`No hay próximas alarmas`);
   }
 }
 
 export function listCurrentAlarms() {
   const alarms = cronJobList.map(x => x.nextDates().format("dddd h mm a"))
   if (alarms.length > 0) {
-    rhasspymopidy.speak(`Hay alarmas a: ${alarms.join(', ')}`);
+    RhasspyMopidy.speak(`Hay alarmas a: ${alarms.join(', ')}`);
   } else {
-    rhasspymopidy.speak(`No hay alarmas programadas`);
+    RhasspyMopidy.speak(`No hay alarmas programadas`);
   }
 }

@@ -12,7 +12,6 @@ import { Slot, Intent } from './@types/intent';
 const hostname = process.env.HOST_MQTT || 'localhost';
 const PORT_MQTT = process.env.PORT_MQTT || 1883;
 const client = connect(`mqtt://${hostname}:${PORT_MQTT}`);
-const rhasspymopidy = new RhasspyMopidy()
 
 const job = new CronJob({
   // At minute 0 past every hour from 9 through 21.”
@@ -20,7 +19,7 @@ const job = new CronJob({
   onTick: function () {
 	  blinking(5000);
 	  let currentTime = new Date();
-	  rhasspymopidy.speak(`Son las ${currentTime.toTimeString().substring(0, 2).replace(/^0+/, '')}`);
+	  RhasspyMopidy.speak(`Son las ${currentTime.toTimeString().substring(0, 2).replace(/^0+/, '')}`);
   },
   timeZone: 'Europe/Paris'
 });
@@ -32,7 +31,7 @@ client.on('connect', () => {
   ledsOff()
   client.subscribe('hermes/#');
   client.subscribe('rhasspy/#');
-  rhasspymopidy.subscribeOnline();
+  RhasspyMopidy.subscribeOnline();
 });
 
 /* On Message */
@@ -59,27 +58,27 @@ export function onIntentDetected (intent: Intent) { //TODO
     slotValues = slots.map((slot: Slot) => slot.value.value)[0]
   }
   if (intentName === 'RadioOn') {
-    rhasspymopidy.radioOn(slotValues);
+    RhasspyMopidy.radioOn(slotValues);
   } else if (intentName === 'SpeakerInterrupt') {
-    rhasspymopidy.stopMopidy();
+    RhasspyMopidy.stopMopidy();
   } else if (intentName === 'PlayArtist') {
-    rhasspymopidy.searchArtist(slotValues);
+    RhasspyMopidy.searchArtist(slotValues);
   } else if (intentName === 'PlayList') {
-    rhasspymopidy.setPlaylist(slotValues);
+    RhasspyMopidy.setPlaylist(slotValues);
   } else if (intentName === 'NextSong') {
-    rhasspymopidy.nextSong();
+    RhasspyMopidy.nextSong();
   } else if (intentName === 'VolumeUp') {
-    rhasspymopidy.volumeUp();
+    RhasspyMopidy.volumeUp();
   } else if (intentName === 'VolumeDown') {
-    rhasspymopidy.volumeDown();
+    RhasspyMopidy.volumeDown();
   } else if (intentName === 'VolumeSet') {
     processVolume(slotValues, slots)
   } else if (intentName === 'LightsOn') {
 	  changeState(1);
-	  rhasspymopidy.speak(`encendido`);
+	  RhasspyMopidy.speak(`encendido`);
   } else if (intentName === 'LightsOff') {
 	  changeState(0);
-	  rhasspymopidy.speak(`apagado`);
+	  RhasspyMopidy.speak(`apagado`);
   } else if (intentName === 'SetWakeUpAlarm') {
     processAlarm(slotValues, slots)
   } else if (intentName === 'ListCurrentAlarms') {
@@ -108,11 +107,11 @@ export function onIntentDetected (intent: Intent) { //TODO
         restartCommand('reboot', 'reiniciado');
         break;
       default:
-        rhasspymopidy.speak(`No entendí ${intentName}`);
+        RhasspyMopidy.speak(`No entendí ${intentName}`);
         break;
     }
   } else {
-    rhasspymopidy.speak('No se que hacer');
+    RhasspyMopidy.speak('No se que hacer');
   }
 }
 
@@ -129,9 +128,9 @@ function onListeningStateChanged (listening: boolean) {
 function restartCommand (command: string, message: string) {
   exec(command, function (_, __, stderr) {
     if (stderr) {
-      rhasspymopidy.speak('Hay un pequeno problema');
+      RhasspyMopidy.speak('Hay un pequeno problema');
     } else {
-      rhasspymopidy.speak(message);
+      RhasspyMopidy.speak(message);
     }
   });
 }
@@ -153,10 +152,10 @@ const processAlarm = (slotValues: string|number, slots: Slot[]) => {
     if (hour && minutes && hour < 24 && minutes < 60) {
       setWakeUpAlarm(hour, minutes);
     } else {
-      rhasspymopidy.speak(`Entendí ${hour} y ${minutes}`);
+      RhasspyMopidy.speak(`Entendí ${hour} y ${minutes}`);
     }
   } else {
-    rhasspymopidy.speak(`No entendí la hora de la alarma`);
+    RhasspyMopidy.speak(`No entendí la hora de la alarma`);
   }
 }
 
@@ -179,19 +178,19 @@ const processVolume = (slotValues: string|number, slots: Slot[]) => {
       if (place === 'habitación') volumeSetSnapcast('raspi', volume)
       if (place === 'cocina') volumeSetSnapcast('raspicam', volume)
     } else if (volume && volume < 100) {
-      rhasspymopidy.volumeSet(volume);
+      RhasspyMopidy.volumeSet(volume);
     } else {
-      rhasspymopidy.speak(`No se que volumen poner`);
+      RhasspyMopidy.speak(`No se que volumen poner`);
     }
   } else {
-    rhasspymopidy.speak(`No entendí el volumen a poner`);
+    RhasspyMopidy.speak(`No entendí el volumen a poner`);
   }
 }
 
 
 process.on('SIGINT', function () {
   client.unsubscribe('hermes/#');
-  rhasspymopidy.close();
+  RhasspyMopidy.close();
   console.log('Bye, bye!');
 	process.exit(0);
 });

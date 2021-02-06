@@ -25,8 +25,8 @@ function shuffle(array: any) {
 	return array;
 };
 
-export class RhasspyMopidy {
-  async speak (text: string) {
+export abstract class RhasspyMopidy {
+  public static async speak (text: string) {
     try {
       const res = await axios({url: `http://${hostnameRhasspy}:12101/api/text-to-speech`, method: 'POST', data: `${text}`});
       return res.status
@@ -36,30 +36,30 @@ export class RhasspyMopidy {
     }
   }
 
-  volumeSet (volumeNumber: number, speak = true) {
+  public static volumeSet (volumeNumber: number, speak = true) {
     console.log(`Volume set to ${volumeNumber}`)
     mopidyClient.mixer.setVolume([Number(volumeNumber)]);
     if (speak) {
-      this.speak(`Volumen a ${volumeNumber}`);
+      RhasspyMopidy.speak(`Volumen a ${volumeNumber}`);
     }
   }
 
-  volumeUp () {
-    this.volumeSet(50)
+  public static volumeUp () {
+    RhasspyMopidy.volumeSet(50)
   }
 
-  async volumeDown () {
-    this.volumeSet(5)
+  public static async volumeDown () {
+    RhasspyMopidy.volumeSet(5)
   }
 
-  async stopMopidy () {
+  public static async stopMopidy () {
     console.log('Stopping moppidy');
     await mopidyClient.playback.stop()
     await mopidyClient.tracklist.clear()
-    this.speak('Silencio');
+    RhasspyMopidy.speak('Silencio');
   }
 
-  async setRadio (radioName: string, radioUri: string[]) {
+  public static async setRadio (radioName: string, radioUri: string[]) {
     await mopidyClient.playback.stop()
     await mopidyClient.tracklist.clear()
     let tracks = await mopidyClient.tracklist.add({uris: radioUri})
@@ -68,27 +68,27 @@ export class RhasspyMopidy {
       tracks = [tracks[tracks.length - 1]]
     }
     try {
-      this.speak(`Voy a sintonizar ${radioName}`);
+      RhasspyMopidy.speak(`Voy a sintonizar ${radioName}`);
       await mopidyClient.playback.play({tlid: tracks[0].tlid});
     } catch (e) {
       console.log(e);
       await mopidyClient.playback.stop()
-      this.speak('Tengo un pequeño problema');
+      RhasspyMopidy.speak('Tengo un pequeño problema');
     }
   }
 
-  setMyRadios (radio: string) {
+  public static setMyRadios (radio: string) {
     let radioUri = RADIOS[radio]
-    this.setRadio(radio, radioUri)
+    RhasspyMopidy.setRadio(radio, radioUri)
   }
 
-  async searchArtist (value: string) {
+  public static async searchArtist (value: string) {
     let result = await mopidyClient.library.search({'query': {'any': [value]}, 'uris': ['local:']})
     let songUris = result[0]['tracks'].map((item: any) => item.uri);
-    this.setRadio(value, songUris);
+    RhasspyMopidy.setRadio(value, songUris);
   }
 
-  async setPlaylist(playlistName: string) {
+  public static async setPlaylist(playlistName: string) {
     const playlists = await mopidyClient.playlists.asList();
     const playlist = await playlists.find((playlist: Playlist) => playlist.name.replace('-',' ').indexOf(playlistName) != -1)
     const items = await mopidyClient.playlists.getItems({uri: playlist.uri})
@@ -99,41 +99,41 @@ export class RhasspyMopidy {
     await mopidyClient.playback.play({tlid: tracks[0].tlid});
   }
 
-  nextSong () {
+  public static nextSong () {
     console.log('Next');
-    this.speak('Siguiente canción');
+    RhasspyMopidy.speak('Siguiente canción');
     mopidyClient.playback.next();
   }
 
-  radioOn (slotValue: string|null) {
+  public static radioOn (slotValue: string|null) {
     console.log(slotValue);
     if (slotValue in RADIOS) {
-      this.setMyRadios(slotValue);
+      RhasspyMopidy.setMyRadios(slotValue);
     } else if (slotValue === 'la luciérnaga') {
       const files = fs.readdirSync(process.env.PODCAST_DIR);
       console.log(`file://${process.env.PODCAST_DIR}/${files[files.length - 1]}`);
-      this.setRadio('la luciérnaga', [`file://${process.env.PODCAST_DIR}/${files[files.length - 1]}`, `file://${process.env.PODCAST_DIR}/${files[files.length-2]}`]);
+      RhasspyMopidy.setRadio('la luciérnaga', [`file://${process.env.PODCAST_DIR}/${files[files.length - 1]}`, `file://${process.env.PODCAST_DIR}/${files[files.length-2]}`]);
     } else {
       console.log('Unkown');
-      this.speak('Radio desconocida')
+      RhasspyMopidy.speak('Radio desconocida')
     }
   }
 
-  close() {
+  public static close() {
     mopidyClient.off();
   }
 
-  subscribeOnline() {
+  public static subscribeOnline() {
     mopidyClient.on('state:online', async () => {
       console.log('[Handler mopidy]: Conectado');
-      this.volumeSet(10, false);
-      await this.speak('Conectado');
+      RhasspyMopidy.volumeSet(10, false);
+      await RhasspyMopidy.speak('Conectado');
     })
   }
 
-  subscribeOffline() {
+  public static subscribeOffline() {
     mopidyClient.on('state:offline', async () => {
-      this.speak('Desconectado');
+      RhasspyMopidy.speak('Desconectado');
     })
   }
 
