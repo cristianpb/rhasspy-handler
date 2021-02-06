@@ -7,9 +7,7 @@
     "build:ts": "tsc --outDir dist",
     "build": "npm run build:ts",
     "start": "node .",
-    "watch-ts": "tsc --outDir dist -w",
-    "watch-node": "nodemon .",
-    "dev": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
+    "dev": "ts-node-dev --respawn -- src/index.ts",
     "test": "ts-node tests/Websockets.test.ts"
   },
   "author": "",
@@ -32,9 +30,8 @@
     "@types/node": "^13.11.1",
     "@types/shelljs": "^0.8.7",
     "@types/ws": "^7.2.4",
-    "concurrently": "^5.1.0",
-    "nodemon": "^2.0.3",
     "ts-node": "^8.8.2",
+    "ts-node-dev": "^1.1.1",
     "typescript": "^3.8.3"
   }
 }
