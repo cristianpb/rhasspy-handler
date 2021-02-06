@@ -8,7 +8,7 @@
     "build": "npm run build:ts",
     "start": "node .",
     "dev": "ts-node-dev --respawn -- src/index.ts",
-    "test": "ts-node tests/Websockets.test.ts"
+    "test": "jest --forceExit"
   },
   "author": "",
   "license": "ISC",
@@ -18,7 +18,7 @@
     "cron": "^1.7.1",
     "dotenv": "^8.0.0",
     "htmlparser2": "^4.1.0",
-    "mopidy": "^1.0.0",
+    "mopidy": "^1.2.1",
     "mqtt": "^2.18.8",
     "onoff": "^5.0.1",
     "shelljs": "^0.8.3",
@@ -26,10 +26,13 @@
   },
   "devDependencies": {
     "@types/cron": "^1.7.2",
+    "@types/jest": "^26.0.20",
     "@types/mqtt": "^2.5.0",
     "@types/node": "^13.11.1",
     "@types/shelljs": "^0.8.7",
     "@types/ws": "^7.2.4",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.0",
     "ts-node": "^8.8.2",
     "ts-node-dev": "^1.1.1",
     "typescript": "^3.8.3"

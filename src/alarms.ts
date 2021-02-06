@@ -1,10 +1,10 @@
 import { CronJob } from 'cron';
+import { RhasspyMopidy } from './rhasspymopidy';
 import moment from 'moment';
 import 'moment/locale/es';
 import { volumeSetSnapcast } from './snapcast';
 
 moment.locale('es');
-import { RhasspyMopidy } from './rhasspymopidy';
 
 let cronJobList: CronJob[] = [];
 
@@ -34,15 +34,14 @@ export function deleteAllAlarms() {
 
 export function deleteOneAlarm(day: number, hour: number) {
   const dateAlarm = moment({day: day, hour: hour});
-  const filteredAlarms = cronJobList.filter(item => !(item.nextDates().isSame(dateAlarm, 'hour')))
-  const deletedCrons = cronJobList.length - filteredAlarms.length;
-  if (deletedCrons > 0) {
-    RhasspyMopidy.speak(`Alarmas borradas ${deletedCrons}`);
-    cronJobList = filteredAlarms
+  const deleteAlarmInd = cronJobList.findIndex(item => !(item.nextDates().isSame(dateAlarm, 'hour')))
+  const deletedAlarm = cronJobList.splice(deleteAlarmInd, deleteAlarmInd + 1);
+  if (deletedAlarm.length > 0) {
+    RhasspyMopidy.speak(`Alarma de ${deletedAlarm.map(x => x.nextDates().format("dddd h mm a"))[0]} borrada`);
   } else {
     RhasspyMopidy.speak(`No se borraron alarmas. Hay ${cronJobList.length}`);
   }
- }
+}
 
 export function listNextAlarms() {
   let now = moment()
@@ -69,4 +68,5 @@ export function listCurrentAlarms() {
   } else {
     RhasspyMopidy.speak(`No hay alarmas programadas`);
   }
+  return alarms
 }
