@@ -3,8 +3,8 @@ import axios from 'axios';
 import Mopidy from 'mopidy';
 import { RADIOS } from './radios';
 
-const hostnameMopidy = process.env.HOST_MOPIDY;
-const hostnameRhasspy = process.env.HOST_RHASSPY;
+const hostnameMopidy = process.env.HOST_MOPIDY || 'localhost';
+const hostnameRhasspy = process.env.HOST_RHASSPY || 'localhost';
 export const mopidyClient: any = new Mopidy({
   webSocketUrl: `ws://${hostnameMopidy}:6680/mopidy/ws/`
 });

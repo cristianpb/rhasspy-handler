@@ -1,11 +1,6 @@
 # Directory to save podcast
 # Mopidy saves this in /var/lib/mopidy/media
 export PODCAST_DIR=media
-# mqtt broker and mopidy hostname
-export HOST_MQTT=localhost
-export HOST_MOPIDY=localhost
-export HOST_RHASSPY=localhost
-export HOST_SNAPCAST=localhost
 export DEVICE=raspberry
 
 dummy		    := $(shell touch artifacts)

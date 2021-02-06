@@ -9,7 +9,7 @@ import { setWakeUpAlarm, listCurrentAlarms, deleteAllAlarms, listNextAlarms } fr
 import { readPhrase } from './phrases';
 import { Slot, Intent } from './@types/intent';
 
-const hostname = process.env.HOST_MQTT;
+const hostname = process.env.HOST_MQTT || 'localhost';
 const PORT_MQTT = process.env.PORT_MQTT || 1883;
 const client = connect(`mqtt://${hostname}:${PORT_MQTT}`);
 const rhasspymopidy = new RhasspyMopidy()
