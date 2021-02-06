@@ -7,3 +7,4 @@ conf/*
 *.retry
 artifacts
 dist
+data

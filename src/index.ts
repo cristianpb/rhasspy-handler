@@ -6,6 +6,7 @@ import { volumeSetSnapcast } from './snapcast';
 import { blinking, changeState } from './relay';
 import { ledsOn, ledsOff, ledsYellow, ledsRed, stopLoop } from './lights';
 import { setWakeUpAlarm, listCurrentAlarms, deleteAllAlarms, listNextAlarms } from './alarms';
+import { readPhrase } from './phrases';
 import { Slot, Intent } from './@types/intent';
 
 const hostname = process.env.HOST_MQTT;
@@ -87,6 +88,8 @@ export function onIntentDetected (intent: Intent) { //TODO
     listNextAlarms();
   } else if (intentName === 'DeleteAllAlarms') {
     deleteAllAlarms();
+  } else if (intentName === 'GoodBye') {
+    readPhrase();
   } else if (intentName === 'RebootService') {
     switch (slotValues) {
       case 'raspi':
