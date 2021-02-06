@@ -14,7 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "apa102-spi": "0.0.6",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "cron": "^1.7.1",
     "dotenv": "^8.0.0",
     "htmlparser2": "^4.1.0",
