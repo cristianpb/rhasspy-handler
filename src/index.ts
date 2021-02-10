@@ -88,7 +88,9 @@ export function onIntentDetected (intent: Intent) { //TODO
   } else if (intentName === 'DeleteAllAlarms') {
     deleteAllAlarms();
   } else if (intentName === 'GoodBye') {
-    readPhrase();
+    readPhrase('phrases');
+  } else if (intentName === 'Joke') {
+    readPhrase('chistes');
   } else if (intentName === 'RebootService') {
     switch (slotValues) {
       case 'raspi':
