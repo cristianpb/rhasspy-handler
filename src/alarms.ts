@@ -18,7 +18,8 @@ export function setWakeUpAlarm(hour: number, minutes: number) {
       volumeSetSnapcast('raspimov', 10);
       RhasspyMopidy.setPlaylist('café croissant');
       setTimeout(function(){ RhasspyMopidy.volumeSet(3, false); }, 60000);
-      setTimeout(function(){ RhasspyMopidy.volumeSet(4, false); }, 600000);
+      setTimeout(function(){ RhasspyMopidy.volumeSet(4, false); }, 180000);
+      setTimeout(function(){ RhasspyMopidy.volumeSet(5, false); }, 360000);
     },
     timeZone: 'Europe/Paris'
   });
@@ -28,6 +29,9 @@ export function setWakeUpAlarm(hour: number, minutes: number) {
 }
 
 export function deleteAllAlarms() {
+  cronJobList.forEach(job => {
+    job.stop()
+  })
   cronJobList.length = 0
   RhasspyMopidy.speak(`Alarmas borradas`);
 }
@@ -35,6 +39,7 @@ export function deleteAllAlarms() {
 export function deleteOneAlarm(day: number, hour: number) {
   const dateAlarm = moment({day: day, hour: hour});
   const deleteAlarmInd = cronJobList.findIndex(item => !(item.nextDates().isSame(dateAlarm, 'hour')))
+  cronJobList[deleteAlarmInd].stop()
   const deletedAlarm = cronJobList.splice(deleteAlarmInd, deleteAlarmInd + 1);
   if (deletedAlarm.length > 0) {
     RhasspyMopidy.speak(`Alarma de ${deletedAlarm.map(x => x.nextDates().format("dddd h mm a"))[0]} borrada`);
