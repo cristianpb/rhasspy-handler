@@ -164,7 +164,7 @@ const processAlarm = (slotValues: string|number, slots: Slot[]) => {
 const processVolume = (slotValues: string|number, slots: Slot[]) => {
   let volume
   let place
-  if (slotValues && slots.length > 1) {
+  if (slotValues && slots.length >= 1) {
     slots.forEach((slot: Slot) => {
       if (slot.slotName === 'volumeLevel') {
         volume = Number(slot.value.value)
