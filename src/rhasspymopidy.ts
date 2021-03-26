@@ -5,7 +5,7 @@ import { RADIOS } from './radios';
 
 const hostnameMopidy = process.env.HOST_MOPIDY || 'localhost';
 const hostnameRhasspy = process.env.HOST_RHASSPY || 'localhost';
-export const mopidyClient: any = new Mopidy({
+const mopidyClient: any = new Mopidy({
   webSocketUrl: `ws://${hostnameMopidy}:6680/mopidy/ws/`
 });
 
@@ -90,13 +90,15 @@ export abstract class RhasspyMopidy {
 
   public static async setPlaylist(playlistName: string) {
     const playlists = await mopidyClient.playlists.asList();
-    const playlist = await playlists.find((playlist: Playlist) => playlist.name.replace('-',' ').indexOf(playlistName) != -1)
-    const items = await mopidyClient.playlists.getItems({uri: playlist.uri})
-    shuffle(items);
-    await mopidyClient.playback.stop()
-    await mopidyClient.tracklist.clear()
-    const tracks = await mopidyClient.tracklist.add({uris: items.map((item: Track) => item.uri)})
-    await mopidyClient.playback.play({tlid: tracks[0].tlid});
+    const playlist = await playlists.find((playlist: Playlist) => playlist.name === playlistName.replace(' ','-'))
+    if (playlist) {
+      const items = await mopidyClient.playlists.getItems({uri: playlist.uri})
+      shuffle(items);
+      await mopidyClient.playback.stop()
+      await mopidyClient.tracklist.clear()
+      const tracks = await mopidyClient.tracklist.add({uris: items.map((item: Track) => item.uri)})
+      await mopidyClient.playback.play({tlid: tracks[0].tlid});
+    }
   }
 
   public static nextSong () {
