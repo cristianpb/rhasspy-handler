@@ -16,7 +16,7 @@ export function setWakeUpAlarm(hour: number, minutes: number) {
       volumeSetSnapcast('raspi', 10);
       volumeSetSnapcast('raspicam', 10);
       volumeSetSnapcast('raspimov', 10);
-      const morningPlaylist = Array('café-croissant', 'reveil-en-douceur', 'wake-up-happy', 'morning-motivation')
+      const morningPlaylist = Array('CaféCroissant', 'Réveilendouceur', 'WakeUpHappy', 'MorningMotivation')
       const playlist = morningPlaylist[Math.floor(Math.random() * morningPlaylist.length)];
       RhasspyMopidy.setPlaylist(playlist);
       setTimeout(function(){ RhasspyMopidy.volumeSet(3, false); }, 60000);

@@ -90,7 +90,7 @@ export abstract class RhasspyMopidy {
 
   public static async setPlaylist(playlistName: string) {
     const playlists = await mopidyClient.playlists.asList();
-    const playlist = await playlists.find((playlist: Playlist) => playlist.name === playlistName.replace(' ','-'))
+    const playlist = await playlists.find((playlist: Playlist) => playlist.name.toLowerCase().includes(playlistName.replace(' ','').toLowerCase()))
     if (playlist) {
       const items = await mopidyClient.playlists.getItems({uri: playlist.uri})
       shuffle(items);
