@@ -1,6 +1,6 @@
 services:
   backend:
-    image: ${APP}
+    image: ${REGISTRY}/${DOCKER_USERNAME}/${APP}
     container_name: ${APP}
     build:
       context: .

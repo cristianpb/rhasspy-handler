@@ -5,6 +5,8 @@ export APP_PATH := $(shell pwd)
 export PODCAST_DIR=media
 export NPM_VERBOSE ?= 1
 export DEVICE=raspberry
+export REGISTRY=ghcr.io
+export DOCKER_USERNAME=cristianpb
 
 dummy		    := $(shell touch artifacts)
 include ./artifacts
