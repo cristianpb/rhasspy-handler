@@ -68,3 +68,27 @@ export function volumeSetSnapcast(name:string, volumeLevel: number) {
     console.log("[Snapcast]: No client with this name");
   }
 }
+
+export function groupSetStream(name:string, streamName: string) {
+  let id
+  groups.forEach(group => {
+    group.clients.forEach(client => {
+      if (client.name === name) id = group.id
+    })
+  })
+  if (id) {
+    let message = { 
+      id:8,
+      jsonrpc:"2.0",
+      method:"Group.SetStream",
+      params:{
+        id,
+        stream_id: streamName
+      }
+    }
+    ws.send(JSON.stringify(message));
+    console.log(`[Handler snapcast]: stream ${streamName} set to ${name}`);
+  } else {
+    console.log("[Snapcast]: No client with this name");
+  }
+}
