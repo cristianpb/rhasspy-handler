@@ -2,7 +2,7 @@ import { connect } from 'mqtt';
 import { exec } from 'shelljs';
 import { CronJob } from 'cron';
 import { RhasspyMopidy } from './rhasspymopidy';
-import { volumeSetSnapcast } from './snapcast';
+import { volumeSetSnapcast, groupSetStream } from './snapcast';
 import { blinking, changeState } from './relay';
 import { ledsOn, ledsOff, ledsYellow, ledsRed, stopLoop } from './lights';
 import { setWakeUpAlarm, listCurrentAlarms, deleteAllAlarms, listNextAlarms } from './alarms';
@@ -13,17 +13,16 @@ const hostname = process.env.HOST_MQTT || 'localhost';
 const PORT_MQTT = process.env.PORT_MQTT || 1883;
 const client = connect(`mqtt://${hostname}:${PORT_MQTT}`);
 
-const job = new CronJob({
-  // At minute 0 past every hour from 9 through 21.”
-  cronTime: '00 11-21 * * 1-5',
-  onTick: function () {
+CronJob.from({
+	cronTime: '00 11-21 * * 1-5',
+	onTick: () => {
 	  blinking(5000);
 	  let currentTime = new Date();
 	  RhasspyMopidy.speak(`Son las ${currentTime.toTimeString().substring(0, 2).replace(/^0+/, '')}`);
   },
-  timeZone: 'Europe/Paris'
+	start: true,
+	timeZone: 'Europe/Paris'
 });
-job.start();
 
 /* On Connect MQTT */
 client.on('connect', () => {
@@ -40,12 +39,24 @@ client.on('message', (topic, message) => {
     onListeningStateChanged(true);
   } else if (topic == 'hermes/asr/stopListening') {
     onListeningStateChanged(false);
+  } else if (topic == 'hermes/tts/say') {
+    console.log("[hermes] say start");
+    // onListeningStateChanged(true);
+  } else if (topic == 'hermes/tts/sayFinished') {
+    // onListeningStateChanged(false);
+    console.log("[hermes] say stop");
   } else if (topic.match(/hermes\/intent\/.+/g) !== null) {
     ledsYellow()
     onIntentDetected(JSON.parse(message.toString()));
   } else if (topic == 'hermes/nlu/intentNotRecognized') {
     ledsRed()
   }
+});
+
+/* On Error */
+client.on('error', (error) => {
+  console.log("[Handler Log] Error");
+  console.log("[Handler Log] Error: " + error);
 });
 
 /* Rhasspy actions */

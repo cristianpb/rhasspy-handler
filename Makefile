@@ -1,7 +1,11 @@
 # Directory to save podcast
 # Mopidy saves this in /var/lib/mopidy/media
+export APP = rhasspyhandler
+export APP_PATH := $(shell pwd)
 export PODCAST_DIR=media
+export NPM_VERBOSE ?= 1
 export DEVICE=raspberry
+export PORT=8000
 
 dummy		    := $(shell touch artifacts)
 include ./artifacts
@@ -9,36 +13,27 @@ include ./artifacts
 ${PODCAST_DIR}:
 	mkdir -p ${PODCAST_DIR}
 
-node_modules:
-	npm install
+build:
+	@export EXEC_ENV=production; \
+		docker compose build
 
-build: node_modules ${PODCAST_DIR}
-	@echo "$(PODCAST_DIR)"
-	npm run build
+dev:
+	@export EXEC_ENV=development; \
+		docker compose up --build
 
-dev: node_modules ${PODCAST_DIR}
-	@echo "$(PODCAST_DIR)"
-	npm run dev
+up: ${PODCAST_DIR}
+	@export EXEC_ENV=production; \
+		docker compose up
 
-up: node_modules ${PODCAST_DIR}
-	@echo "$(PODCAST_DIR)"
-	npm run start
-
-test: node_modules ${PODCAST_DIR}
-	@echo "$(PODCAST_DIR)"
+test: ${PODCAST_DIR}
 	npm run test
-
-clean:
-	rm -rf node_modules
-
-
 
 # sync code
 push:
-	rsync -avz --include 'dist' --exclude-from '.gitignore' * raspi:~/rhasspyhandler/
+	rsync -avz dist raspi:~/rhasspyhandler/
 
 pull:
-	rsync -avz --exclude 'src' --exclude-from '.gitignore' --exclude 'Makefile' raspi:~/rhasspyhandler/* .
+	rsync -avz raspi:~/rhasspyhandler/rhasspy .
 
 
 #./run-venv.sh --profile es

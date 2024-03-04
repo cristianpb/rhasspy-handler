@@ -1,6 +1,7 @@
 import fs from 'fs';
 import axios from 'axios';
 import Mopidy from 'mopidy';
+import { ledsGreen, ledsOff } from './lights';
 import { RADIOS } from './radios';
 
 const hostnameMopidy = process.env.HOST_MOPIDY || 'localhost';
@@ -98,6 +99,8 @@ export abstract class RhasspyMopidy {
       await mopidyClient.tracklist.clear()
       const tracks = await mopidyClient.tracklist.add({uris: items.map((item: Track) => item.uri)})
       await mopidyClient.playback.play({tlid: tracks[0].tlid});
+    } else {
+      console.log(`${playlistName} not found`);
     }
   }
 
@@ -126,10 +129,9 @@ export abstract class RhasspyMopidy {
   }
 
   public static subscribeOnline() {
-    mopidyClient.on('state:online', async () => {
+    mopidyClient.on('state:online', () => {
       console.log('[Handler mopidy]: Conectado');
       RhasspyMopidy.volumeSet(10, false);
-      await RhasspyMopidy.speak('Conectado');
     })
   }
 
@@ -141,14 +143,14 @@ export abstract class RhasspyMopidy {
 
 };
 
-interface Playlist {
+export interface Playlist {
   __model__: string;
   uri: string;  //'m3u:viva-latino.m3u',
   name: string; //'viva-latino',
   type: string; // 'playlist' }
 }
 
-interface Track {
+export interface Track {
   __model__: string; // 'Ref',
   uri: string; //'file:///var/lib/mopidy/music/ROSAL%C3%83%C2%8DA%20-%20Dolerme.m4a',
   name: string; // 'ROSALA - DOLERME - LETRA - LYRICS (English Translation)',

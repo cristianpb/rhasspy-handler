@@ -19,8 +19,18 @@ function* loopingColors() {
 	}
 }
 
-export function ledsYellow() {
+export function ledsBlue() {
+  setLedColor(0, 0, 0, 255);
+  setTimeout( () => { ledsOff() }, 1500)
+}
+
+export function ledsGreen() {
   setLedColor(0, 0, 128, 0);
+  setTimeout( () => { ledsOff() }, 1500)
+}
+
+export function ledsYellow() {
+  setLedColor(0, 255, 255, 0);
   setTimeout( () => { ledsOff() }, 1500)
 }
 

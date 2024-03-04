@@ -1,6 +1,7 @@
 {
     "sourceRoot": "src",
     "compilerOptions": {
+        "skipLibCheck": true,
         "module": "commonjs",
         "esModuleInterop": true,
         "target": "es6",

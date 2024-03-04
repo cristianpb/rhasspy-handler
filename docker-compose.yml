@@ -1,0 +1,22 @@
+services:
+  backend:
+    image: ${APP}
+    container_name: ${APP}
+    build:
+      context: .
+      target: ${EXEC_ENV}
+      args:
+        app_path: /${APP}
+        NPM_VERBOSE: ${NPM_VERBOSE}
+    environment:
+      - port=${PORT}
+      - app_path=${APP}
+      - PODCAST_DIR=${PODCAST_DIR}
+      - DEVICE=${DEVICE}
+      - PORT_MQTT=${PORT_MQTT}
+      - HOST_MQTT=${HOST_MQTT}
+      - HOST_MOPIDY=${HOST_MOPIDY}
+      - HOST_RHASSPY=${HOST_RHASSPY}
+      - HOST_SNAPCAST=${HOST_SNAPCAST}
+    volumes:
+      - ${APP_PATH}/src:/${APP}/src
