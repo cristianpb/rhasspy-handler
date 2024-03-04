@@ -47,5 +47,5 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           target: production
           build-args: |
-            app_path=rhasspy-handler
+            app_path=/rhasspy-handler
             NPM_VERBOSE=1
