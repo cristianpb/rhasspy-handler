@@ -1,11 +1,10 @@
 # Directory to save podcast
 # Mopidy saves this in /var/lib/mopidy/media
-export APP = rhasspyhandler
+export APP = rhasspy-handler
 export APP_PATH := $(shell pwd)
 export PODCAST_DIR=media
 export NPM_VERBOSE ?= 1
 export DEVICE=raspberry
-export PORT=8000
 
 dummy		    := $(shell touch artifacts)
 include ./artifacts

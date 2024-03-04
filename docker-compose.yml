@@ -9,7 +9,6 @@ services:
         app_path: /${APP}
         NPM_VERBOSE: ${NPM_VERBOSE}
     environment:
-      - port=${PORT}
       - app_path=${APP}
       - PODCAST_DIR=${PODCAST_DIR}
       - DEVICE=${DEVICE}
