@@ -1,7 +1,7 @@
 #######################
 # Step 1: Base target #
 #######################
-FROM --platform=$BUILDPLATFORM node:20 as development
+FROM node:20 as development
 
 ARG NPM_VERBOSE
 ARG app_path
@@ -24,12 +24,12 @@ VOLUME ${app_path}/data
 
 COPY tsconfig.json ./
 
-CMD ["npm","run", "dev"]
+ENTRYPOINT ["npm","run", "dev"]
 
 ##########################
 # Step 3: "build" target #
 ##########################
-FROM --platform=$BUILDPLATFORM development as build
+FROM development as build
 ARG app_path
 
 WORKDIR $app_path
@@ -43,7 +43,7 @@ RUN npm run build
 ###############################
 # Step 4: "production" target #
 ###############################
-FROM --platform=$BUILDPLATFORM node:20-alpine as production
+FROM node:20-alpine as production
 ARG app_path
 
 WORKDIR $app_path
@@ -60,4 +60,4 @@ VOLUME ${app_path}/data
 COPY --from=build ${app_path}/node_modules ${app_path}/node_modules
 COPY --from=build ${app_path}/dist ${app_path}/dist
 
-CMD ["npm","run", "start"]
+ENTRYPOINT ["npm","run", "start"]
