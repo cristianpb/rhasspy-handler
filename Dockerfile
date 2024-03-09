@@ -46,16 +46,13 @@ RUN npm run build
 FROM node:20-alpine as production
 ARG app_path
 
+RUN apk add --no-cache tzdata
 WORKDIR $app_path
 
 COPY package.json ./
 ADD src ./src
 ADD tests ./tests
 VOLUME ${app_path}/data
-
-## Install production dependencies and clean cache
-#RUN npm install --production && \
-#    npm cache clean --force
 
 COPY --from=build ${app_path}/node_modules ${app_path}/node_modules
 COPY --from=build ${app_path}/dist ${app_path}/dist
