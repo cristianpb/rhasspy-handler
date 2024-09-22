@@ -43,7 +43,7 @@ client.on('message', (topic, message) => {
     console.log("[hermes] say start");
     // onListeningStateChanged(true);
   } else if (topic == 'hermes/tts/sayFinished') {
-    // onListeningStateChanged(false);
+    onListeningStateChanged(false);
     console.log("[hermes] say stop");
   } else if (topic.match(/hermes\/intent\/.+/g) !== null) {
     ledsYellow()
