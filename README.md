@@ -1,10 +1,6 @@
-# Rhasspy handler
+# Respeaker Pi MQTT handler
 
-Intent handler for Rhasspy voice recognition system.
-
-Code is mostly in typescript.
-
-This handlers connects with mopidy music system, controls a relay and turns the spi leds of a Respeaker.
+This handler connects with MQTT service and controls a relay and turns the spi leds of a Respeaker.
 
 ## Installation
 

@@ -31,11 +31,7 @@ test: ${PODCAST_DIR}
 
 # sync code
 push:
-	rsync -avz dist raspi:~/rhasspyhandler/
+	rsync -avz ${PWD} raspi:~/
 
 pull:
 	rsync -avz raspi:~/rhasspyhandler/rhasspy .
-
-
-#./run-venv.sh --profile es
-#mosquitto_sub -h localhost -v -t 'hermes/#' -p 1883

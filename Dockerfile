@@ -1,7 +1,7 @@
 #######################
 # Step 1: Base target #
 #######################
-FROM node:20 as development
+FROM node:22 AS development
 
 ARG NPM_VERBOSE
 ARG app_path
@@ -19,7 +19,6 @@ RUN if [ -z "${NPM_VERBOSE}" ]; then\
 
 VOLUME ${app_path}/src
 VOLUME ${app_path}/dist
-VOLUME ${app_path}/tests
 VOLUME ${app_path}/data
 
 COPY tsconfig.json ./
@@ -29,7 +28,7 @@ ENTRYPOINT ["npm","run", "dev"]
 ##########################
 # Step 3: "build" target #
 ##########################
-FROM development as build
+FROM development AS build
 ARG app_path
 
 WORKDIR $app_path
@@ -43,7 +42,7 @@ RUN npm run build
 ###############################
 # Step 4: "production" target #
 ###############################
-FROM node:20-alpine as production
+FROM node:22-alpine AS production
 ARG app_path
 
 RUN apk add --no-cache tzdata
@@ -51,7 +50,6 @@ WORKDIR $app_path
 
 COPY package.json ./
 ADD src ./src
-ADD tests ./tests
 VOLUME ${app_path}/data
 
 COPY --from=build ${app_path}/node_modules ${app_path}/node_modules
